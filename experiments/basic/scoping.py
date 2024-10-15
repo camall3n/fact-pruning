@@ -48,12 +48,12 @@ CONFIGS = [
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 
-# SUITE = ["gripper"]
+SUITE = ["gripper"]
 
 ENVIRONMENT = LocalEnvironment(processes=48)
 exp = Experiment(environment=ENVIRONMENT)
 
-TIME_LIMIT="30m"
+TIME_LIMIT=1800
 MEMORY_LIMIT="3584M"
 
 exp.set_property("planner_time_limit", 1800)     # pass this to executable
@@ -72,9 +72,8 @@ for alg, conf in ALGS.items():
         run = exp.add_run()
         # Create symbolic links and aliases. This is optional. We
         # could also use absolute paths in add_command().
-        run.add_resource("domain", task.domain_file, symlink=True)
+        #run.add_resource("domain", task.domain_file, symlink=True)
         run.add_resource("problem", task.problem_file, symlink=True)
-        # 'ff' binary has to be on the PATH.
         # We could also use exp.add_resource().
         command = conf + ["{problem}"]
         run.add_command(
@@ -85,7 +84,7 @@ for alg, conf in ALGS.items():
         )
         # AbsoluteReport needs the following properties:
         # 'domain', 'problem', 'algorithm', 'coverage'.
-        run.set_property("domain", task.domain)
+        #run.set_property("domain", task.domain)
         run.set_property("problem", task.problem)
         run.set_property("algorithm", alg)
         # BaseReport needs the following properties:
@@ -105,9 +104,9 @@ exp.add_step("parse", exp.parse)
 
 exp.add_fetcher(name='fetch')
 
-attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
+#attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
 # exp.add_comparison_table_step(attributes=attributes)
-exp.add_absolute_report_step(attributes=attributes)
+#exp.add_absolute_report_step(attributes=attributes)
 
 exp.run_steps()
 
