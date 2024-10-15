@@ -13,22 +13,25 @@ from common_setup import IssueConfig, IssueExperiment
 
 PLANNER_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BENCHMARKS_DIR = os.path.join(PLANNER_DIR, "benchmarks", "basic")
+
 PPATH = f"PYTHONPATH={PLANNER_DIR}/src/translate/"
+os.environ['PYTHONPATH'] = f"{PLANNER_DIR}/src/translate/"
+
 PLANNER = f"{PLANNER_DIR}/src/translate/scoping/core.py"
 ALGS = {
-    "vanilla" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "M" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "CL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "MCL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
-    "FMCL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop"],
-    "FLMCL" : [PPATH, "python", PLANNER, "--variables-only"],
+    "vanilla" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "M" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "CL" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "MCL" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
+    "FMCL" : ["python", PLANNER, "--variables-only", "--disable-loop"],
+    "FLMCL" : ["python", PLANNER, "--variables-only"],
 # 
-    "val-vanilla" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "val-M" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "val-CL" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "val-MCL" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass"],
-    "val-FMCL" : [PPATH, "python", PLANNER, "--disable-loop"],
-    "val-FLMCL" : [PPATH, "python", PLANNER],
+    "val-vanilla" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "val-M" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "val-CL" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "val-MCL" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass"],
+    "val-FMCL" : ["python", PLANNER, "--disable-loop"],
+    "val-FLMCL" : ["python", PLANNER],
 }
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
