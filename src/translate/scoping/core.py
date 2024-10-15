@@ -150,7 +150,7 @@ def main():
         enable_forward_pass=args.enable_forward_pass,
         enable_loop=args.enable_loop,
     )
-    scope(args.sas_file, scoping_options)
+    scope_sas(args.sas_file, scoping_options)
 
 
 if __name__ == "__main__":
