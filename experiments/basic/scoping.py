@@ -11,40 +11,25 @@ from parser import SaSParser
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
-BENCHMARKS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),"benchmarks", "basic")
-# BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
-REVISIONS = ["loop"]
-BUILDS = ["release"]
-
-CONFIG_NICKS = []
-
-
+PLANNER_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BENCHMARKS_DIR = os.path.join(PLANNER_DIR, "benchmarks", "basic")
+PPATH = f"PYTHONPATH={PLANNER_DIR}/src/translate/"
+PLANNER = f"{PLANNER_DIR}/src/translate/scoping/core.py"
 ALGS = {
-    "vanilla" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "M" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "CL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "MCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only", "--disable-loop", "--disable-forward-pass"],
-    "FMCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only", "--disable-loop"],
-    "FLMCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--variables-only"],
+    "vanilla" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "M" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "CL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "MCL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
+    "FMCL" : [PPATH, "python", PLANNER, "--variables-only", "--disable-loop"],
+    "FLMCL" : [PPATH, "python", PLANNER, "--variables-only"],
 # 
-    "val-vanilla" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "val-M" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "val-CL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "val-MCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--disable-loop", "--disable-forward-pass"],
-    "val-FMCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py", "--disable-loop"],
-    "val-FLMCL" : ["PYTHONPATH=src/translate/", "python", "src/translate/scoping/core.py"],
+    "val-vanilla" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "val-M" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "val-CL" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "val-MCL" : [PPATH, "python", PLANNER, "--disable-loop", "--disable-forward-pass"],
+    "val-FMCL" : [PPATH, "python", PLANNER, "--disable-loop"],
+    "val-FLMCL" : [PPATH, "python", PLANNER],
 }
-
-
-CONFIGS = [
-    IssueConfig(
-        config_nick,
-        config,
-        build_options=[build],
-        driver_options=["--build", build])
-    for build in BUILDS
-    for config_nick, config in CONFIG_NICKS
-]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 
