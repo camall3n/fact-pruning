@@ -16,7 +16,8 @@ def sas_name(content, props):
     problem = data["problem"].replace(".pddl", ".sas")
     repo = data["repo"]
     benchmarks = "benchmarks"
-    path = os.path.join(repo,benchmarks,"basic",domain)
+    alg = data["algorithm"]
+    path = os.path.join(repo, benchmarks, alg, domain)
     os.makedirs(path, exist_ok=True)
     props["sas_name"] = os.path.join(path, problem)
     fname = os.path.join("data", data["experiment_name"], data["run_dir"], "output.sas")
