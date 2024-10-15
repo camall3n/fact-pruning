@@ -19,19 +19,19 @@ os.environ['PYTHONPATH'] = f"{PLANNER_DIR}/src/translate/"
 
 PLANNER = f"{PLANNER_DIR}/src/translate/scoping/core.py"
 ALGS = {
-    "vanilla" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "M" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "CL" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "MCL" : ["python", PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
-    "FMCL" : ["python", PLANNER, "--variables-only", "--disable-loop"],
-    "FLMCL" : ["python", PLANNER, "--variables-only"],
+    "vanilla" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "M" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "CL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "MCL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
+    "FMCL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop"],
+    "FLMCL" : ['sys.executable', PLANNER, "--variables-only"],
 # 
-    "val-vanilla" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "val-M" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "val-CL" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "val-MCL" : ["python", PLANNER, "--disable-loop", "--disable-forward-pass"],
-    "val-FMCL" : ["python", PLANNER, "--disable-loop"],
-    "val-FLMCL" : ["python", PLANNER],
+    "val-vanilla" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "val-M" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "val-CL" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "val-MCL" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass"],
+    "val-FMCL" : ['sys.executable', PLANNER, "--disable-loop"],
+    "val-FLMCL" : ['sys.executable', PLANNER],
 }
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
