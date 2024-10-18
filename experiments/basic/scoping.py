@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 
 from lab.environments import LocalEnvironment
 from lab.experiment import Experiment
@@ -19,30 +19,30 @@ os.environ['PYTHONPATH'] = f"{PLANNER_DIR}/src/translate/"
 
 PLANNER = f"{PLANNER_DIR}/src/translate/scoping/core.py"
 ALGS = {
-    "vanilla" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "M" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "CL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "MCL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
-    "FMCL" : ['sys.executable', PLANNER, "--variables-only", "--disable-loop"],
-    "FLMCL" : ['sys.executable', PLANNER, "--variables-only"],
+    "vanilla" : [sys.executable, PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "M" : [sys.executable, PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "CL" : [sys.executable, PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "MCL" : [sys.executable, PLANNER, "--variables-only", "--disable-loop", "--disable-forward-pass"],
+    "FMCL" : [sys.executable, PLANNER, "--variables-only", "--disable-loop"],
+    "FLMCL" : [sys.executable, PLANNER, "--variables-only"],
 # 
-    "val-vanilla" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
-    "val-M" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
-    "val-CL" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
-    "val-MCL" : ['sys.executable', PLANNER, "--disable-loop", "--disable-forward-pass"],
-    "val-FMCL" : ['sys.executable', PLANNER, "--disable-loop"],
-    "val-FLMCL" : ['sys.executable', PLANNER],
+    "val-vanilla" : [sys.executable, PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging", "--disable-causal-links"],
+    "val-M" : [sys.executable, PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-causal-links"],
+    "val-CL" : [sys.executable, PLANNER, "--disable-loop", "--disable-forward-pass", "--disable-merging"],
+    "val-MCL" : [sys.executable, PLANNER, "--disable-loop", "--disable-forward-pass"],
+    "val-FMCL" : [sys.executable, PLANNER, "--disable-loop"],
+    "val-FLMCL" : [sys.executable, PLANNER],
 }
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 
-SUITE = ["gripper"]
+#SUITE = ["gripper"]
 
 ENVIRONMENT = LocalEnvironment(processes=48)
 exp = Experiment(environment=ENVIRONMENT)
 
 TIME_LIMIT=1800
-MEMORY_LIMIT="3584M"
+MEMORY_LIMIT=3584
 
 exp.set_property("planner_time_limit", 1800)     # pass this to executable
 exp.set_property("planner_memory_limit", "3.5g")
