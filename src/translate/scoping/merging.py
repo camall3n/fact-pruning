@@ -58,6 +58,8 @@ def merge(
     precond_facts = FactSet()
     for a in actions:
         precond_facts.union(get_precondition_facts(a, variable_domains))
+        if not a.precondition:
+            return FactSet()
     if not any(values == variable_domains[var] for var, values in precond_facts):
         return precond_facts
 
