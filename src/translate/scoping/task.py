@@ -14,11 +14,13 @@ class ScopingTask:
     mutexes: list[list[VarValPair]] = field(default_factory=list)
     axioms: list[VarValAction] = field(default_factory=list)
     metric: bool = False
+    value_names: dict[int, list[int]] = field(default_factory=dict)
 
     def from_sas(sas_task: fd.SASTask) -> "ScopingTask":
         domains = FactSet(
             {i: set(range(r)) for i, r in enumerate(sas_task.variables.ranges)}
         )
+        value_names = {i: vals for i, vals in enumerate(sas_task.variables.value_names)}
         init = list(enumerate(sas_task.init.values))
         goal = sas_task.goal.pairs
         actions = [VarValAction.from_sas(op) for op in sas_task.operators]
@@ -27,6 +29,7 @@ class ScopingTask:
             VarValAction(name="", precondition=ax.condition, effect=[ax.effect], cost=0)
             for ax in sas_task.axioms
         ]
+        metric = sas_task.metric
         return ScopingTask(
             domains=domains,
             init=init,
@@ -34,6 +37,8 @@ class ScopingTask:
             actions=actions,
             mutexes=mutexes,
             axioms=axioms,
+            metric=metric,
+            value_names=value_names,
         )
 
     def to_sas(self) -> fd.SASTask:
@@ -41,7 +46,10 @@ class ScopingTask:
         variables = fd.SASVariables(
             ranges=[len(self.domains[var]) for var in sorted(self.domains.variables)],
             axiom_layers=[-1 for _ in self.domains.variables],
-            value_names=[sorted(list(values)) for _, values in self.domains],
+            value_names=[
+                [self.value_names[var][val_idx] for val_idx in sorted(list(values))]
+                for var, values in self.domains
+            ],
         )
         mutexes = (
             []
@@ -107,5 +115,10 @@ class ScopingTask:
                 return False
         for a, b in zip(self.mutexes, other.mutexes):
             if sorted(a) != sorted(b):
+                return False
+        for a, b in zip(self.value_names.keys(), other.value_names.keys()):
+            if a != b:
+                return False
+            if self.value_names[a] != other.value_names[a]:
                 return False
         return True
