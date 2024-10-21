@@ -122,3 +122,13 @@ class ScopingTask:
             if self.value_names[a] != other.value_names[a]:
                 return False
         return True
+
+    def dump(self):
+        print(f"domains={self.domains}")
+        print(f"init={self.init}")
+        print(f"goal={self.goal}")
+        print("actions=[")
+        for a in self.actions:
+            print(f"    {a.name}, pre={a.precondition}")
+            print(f"         eff={a.effect}")
+        print("]")
