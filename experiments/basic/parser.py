@@ -29,7 +29,7 @@ def sas_name(content, props):
     if os.path.exists(fname):
         shutil.copyfile(fname, props["sas_name"])
     if os.path.exists(target_sas_path):
-        props["sas_name"] = os.path.join(path, target_sas_file)
+        # props["sas_name"] = os.path.join(path, target_sas_file)
         shutil.copyfile(target_sas_path, props["sas_name"])
 
 class SaSParser(Parser):
