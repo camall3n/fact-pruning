@@ -25,8 +25,17 @@ def scope_backward(
         enable_causal_links=enable_causal_links,
         enable_fact_based=enable_fact_based,
     )
+    # Explicitly add precond facts in case preconds were dropped in a merge
+    precond_facts = FactSet()
     for a in actions:
-        facts.add(a.precondition)
+        precond_facts.add(a.precondition)
+    facts.union(precond_facts)
+
+    # Also add side-effects on vars that appear in preconds
+    for a in actions:
+        for var, val in a.effect:
+            if var in precond_facts.variables:
+                facts.add(var, val)
     return prune_task(scoping_task, facts, actions)
 
 
