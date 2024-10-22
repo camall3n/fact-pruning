@@ -66,7 +66,7 @@ def test_vanilla_values_single():
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     assert relevant_facts == FactSet({"x": {0, 1}, "y": {0}, "z": {0}})
@@ -79,7 +79,7 @@ def test_vanilla_variables_single():
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=True,
+        enable_fact_based=False,
     )
 
     assert relevant_facts == FactSet({"x": {0, 1, 2}, "y": {0, 1}, "z": {0}})
@@ -92,7 +92,7 @@ def test_vanilla_values_chain():
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     assert relevant_facts == FactSet({"x": {0, 1}, "y": {0, 1}, "z": {0, 1}})
@@ -105,7 +105,7 @@ def test_vanilla_variables_chain():
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=True,
+        enable_fact_based=False,
     )
 
     assert relevant_facts == scoping_task.domains
@@ -118,14 +118,14 @@ def test_merge_values():
         scoping_task,
         enable_merging=True,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     nonmerging_facts, nonmerging_actions = compute_goal_relevance(
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     assert merging_facts == FactSet({"x": {0}, "y": {0}, "z": {1, 0}})
@@ -165,14 +165,14 @@ def test_merge_multi():
         scoping_task,
         enable_merging=True,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     nonmerging_facts, nonmerging_actions = compute_goal_relevance(
         scoping_task,
         enable_merging=False,
         enable_causal_links=False,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     assert merging_facts == FactSet({"z": {1}})
@@ -190,7 +190,7 @@ def test_causal_links_variables():
         scoping_task,
         enable_merging=False,
         enable_causal_links=True,
-        enable_fact_based=True,
+        enable_fact_based=False,
     )
 
     assert relevant_facts == FactSet({"x": {1}, "y": {0, 1}, "z": {0, 1, 2}})
@@ -206,7 +206,7 @@ def test_causal_links_values():
         scoping_task,
         enable_merging=False,
         enable_causal_links=True,
-        enable_fact_based=False,
+        enable_fact_based=True,
     )
 
     assert relevant_facts == FactSet({"x": {0}, "y": {1}, "z": {0, 1}})
