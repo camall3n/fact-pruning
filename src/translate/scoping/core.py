@@ -82,6 +82,7 @@ def prune_task(
         mutexes=mutexes,
         axioms=axioms,
         metric=scoping_task.metric,
+        value_names=scoping_task.value_names,
     )
 
 
