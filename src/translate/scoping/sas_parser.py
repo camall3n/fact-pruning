@@ -8,7 +8,7 @@ from typing import Tuple, List, NewType, Optional
 import sas_tasks as fd
 
 
-SasVarVal = NewType("SasVarVal", str)
+SasValueName = NewType("SasValueName", str)
 
 
 @dataclass(frozen=True, order=True)
@@ -16,17 +16,17 @@ class SasVar:
     nm: str
     axiom_layer: int
     range: int
-    vals: Tuple[SasVarVal, ...]
+    vals: Tuple[SasValueName, ...]
 
     @staticmethod
     def from_regex_tuple(m: Tuple[str, str, str, str]) -> SasVar:
         return SasVar(m[0], int(m[1]), int(m[2]), SasVar.split_values(m[3]))
 
     @staticmethod
-    def split_values(s: str) -> Tuple[SasVarVal, ...]:
-        return tuple([SasVarVal(x) for x in s.split("\n")])
+    def split_values(s: str) -> Tuple[SasValueName, ...]:
+        return tuple([SasValueName(x) for x in s.split("\n")])
 
-    def lookup(self, value: SasVarVal) -> int:
+    def lookup(self, value: SasValueName) -> int:
         if value is None:
             return -1
         return self.vals.index(value)
@@ -38,11 +38,11 @@ class SasVar:
 @dataclass(frozen=True, order=True)
 class SasVarValPair:
     var: SasVar
-    # val: SasVarVal
+    # val: SasValueName
     val: int
 
     @property
-    def val_nm(self) -> SasVarVal:
+    def val_nm(self) -> SasValueName:
         return self.var.vals[self.val]
 
 
@@ -113,7 +113,7 @@ class SasPartialState:
 
     var_value_pairs: Tuple[SasVarValPair, ...]
 
-    def __getitem__(self, key: SasVar) -> SasVarVal:
+    def __getitem__(self, key: SasVar) -> SasValueName:
         candidates = [x.val for x in self.var_value_pairs if x.var == key]
         return candidates[0]
 
@@ -499,7 +499,7 @@ class SasParser:
         # Variables
         ranges = [v.range for v in self.sas_vars]
         axiom_layers = [v.axiom_layer for v in self.sas_vars]
-        value_names = [v.nm for v in self.sas_vars]
+        value_names = [list(v.vals) for v in self.sas_vars]
         variables = fd.SASVariables(ranges, axiom_layers, value_names)
 
         # Mutexes

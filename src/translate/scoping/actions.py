@@ -27,8 +27,8 @@ class VarValAction:
         ]
         pre_list += sas_operator.prevail
         eff_list = [(var, post) for (var, pre, post, conds) in sas_operator.pre_post]
-        # TODO: remove duplicates?
-        pre_list = sorted(list(set(pre_list)))
+        # Remove any duplicates while preserving order
+        pre_list = list(dict.fromkeys(pre_list))
         return cls(sas_operator.name, pre_list, eff_list, sas_operator.cost)
 
     @property

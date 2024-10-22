@@ -42,14 +42,12 @@ class ScopingTask:
         )
 
     def to_sas(self) -> fd.SASTask:
-        var_index = {var: i for i, var in enumerate(sorted(self.domains.variables))}
+        sorted_vars = sorted(self.domains.variables)
+        var_index = {var: i for i, var in enumerate(sorted_vars)}
         variables = fd.SASVariables(
-            ranges=[len(self.domains[var]) for var in sorted(self.domains.variables)],
-            axiom_layers=[-1 for _ in self.domains.variables],
-            value_names=[
-                [self.value_names[var][val_idx] for val_idx in sorted(list(values))]
-                for var, values in self.domains
-            ],
+            ranges=[len(self.domains[var]) for var in sorted_vars],
+            axiom_layers=[-1 for _ in sorted_vars],
+            value_names=[self.value_names[var] for var in sorted_vars],
         )
         mutexes = (
             []
