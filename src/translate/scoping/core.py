@@ -52,6 +52,11 @@ def prune_task(
     scoping_task: ScopingTask, facts: FactSet, actions: list[VarValAction]
 ) -> ScopingTask:
     facts = FactSet({var: values for var, values in facts if len(values) > 1})
+    value_names = [
+        [name for val, name in enumerate(val_names) if (var, val) in facts]
+        for var, val_names in scoping_task.value_names.items()
+        if var in facts.variables
+    ]
 
     init = prune_facts(scoping_task.init, facts)
     goal = prune_facts(scoping_task.goal, facts)
@@ -82,7 +87,7 @@ def prune_task(
         mutexes=mutexes,
         axioms=axioms,
         metric=scoping_task.metric,
-        value_names=scoping_task.value_names,
+        value_names=value_names,
     )
 
 

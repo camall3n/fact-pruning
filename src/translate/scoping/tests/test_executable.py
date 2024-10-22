@@ -22,9 +22,22 @@ def test_agricola():
     scope_sas(sas_path, scoping_options)
 
 
+def test_dummy_unsolvable():
+    sas_path = "../../benchmarks/basic/mystery/prob07.sas"
+    scope_sas(sas_path, scoping_options)
+
+
+def test_parcprinter():
+    sas_path = "../../benchmarks/basic/parcprinter-08-strips/p01.sas"
+    scope_sas(sas_path, scoping_options=ScopingOptions(0, 0, 1, 0, 0))
+
+
 # %%
 test_gripper()
 test_airport()
 test_agricola()
+# test_dummy_unsolvable()
+# %%
+test_parcprinter()
 
 print("All tests passed.")

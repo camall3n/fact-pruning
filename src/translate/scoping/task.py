@@ -47,7 +47,7 @@ class ScopingTask:
         variables = fd.SASVariables(
             ranges=[len(self.domains[var]) for var in sorted_vars],
             axiom_layers=[-1 for _ in sorted_vars],
-            value_names=[self.value_names[var] for var in sorted_vars],
+            value_names=[self.value_names[var_index[var]] for var in sorted_vars],
         )
         mutexes = (
             []
