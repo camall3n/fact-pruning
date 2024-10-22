@@ -8,3 +8,4 @@ class ScopingOptions:
     enable_fact_based: bool = True
     enable_forward_pass: bool = True
     enable_loop: bool = True
+    write_output_file: bool = True

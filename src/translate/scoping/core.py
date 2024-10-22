@@ -117,19 +117,18 @@ def scope_sas(
     sas_path: str,
     scoping_options: ScopingOptions,
 ):
-    # sas_path = "../../toy-minecraft-merging.sas"
     parser = SasParser(pth=sas_path)
     parser.parse()
     sas_task: fd.SASTask = parser.to_fd()
-    # sas_task.dump()
     scoping_task = ScopingTask.from_sas(sas_task)
     scoped_task = scope(scoping_task, scoping_options)
     scoped_sas = scoped_task.to_sas()
-    # scoped_sas.dump()
-    filepath, ext = os.path.splitext(sas_path)
-    output_filename = filepath + "_scoped" + ext
-    with open(output_filename, "w") as f:
-        scoped_sas.output(f)
+
+    if scoping_options.write_output_file:
+        filepath, ext = os.path.splitext(sas_path)
+        output_filename = filepath + "_scoped" + ext
+        with open(output_filename, "w") as f:
+            scoped_sas.output(f)
 
 
 def parse_args():
