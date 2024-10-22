@@ -27,17 +27,15 @@ def test_dummy_unsolvable():
     scope_sas(sas_path, scoping_options)
 
 
-def test_parcprinter():
+def test_pruning_value_names():
     sas_path = "../../benchmarks/basic/parcprinter-08-strips/p01.sas"
-    scope_sas(sas_path, scoping_options=ScopingOptions(0, 0, 1, 0, 0))
+    scope_sas(sas_path, scoping_options=ScopingOptions(0, 0, 1, 0, 0, False))
 
 
-# %%
 test_gripper()
 test_airport()
 test_agricola()
-# test_dummy_unsolvable()
-# %%
-test_parcprinter()
+test_dummy_unsolvable()
+test_pruning_value_names()
 
 print("All tests passed.")

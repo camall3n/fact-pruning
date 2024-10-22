@@ -135,8 +135,8 @@ class SasParser:
     """
 
     # Regex patterns used in parsing
-    pattern_var_val_pair = "(?P<var_num>\d+) (?P<val_num>\d+)"
-    pattern_operator = "begin_operator\n(?P<nm>.+)\n(?P<n_prevail>.+)\n(?P<prevail>(\d+ \d+\n)*?)(?P<n_effects>\d+)\n(?P<effects>[\s\S]+?)\n(?P<cost>\d+)\nend_operator"
+    pattern_var_val_pair = r"(?P<var_num>\d+) (?P<val_num>\d+)"
+    pattern_operator = r"begin_operator\n(?P<nm>.+)\n(?P<n_prevail>.+)\n(?P<prevail>(\d+ \d+\n)*?)(?P<n_effects>\d+)\n(?P<effects>[\s\S]+?)\n(?P<cost>\d+)\nend_operator"
 
     # Type annotations for parsed values
     s_sas: str
@@ -175,7 +175,7 @@ class SasParser:
         self.parse_axioms()
 
     def parse_version(self) -> str:
-        pattern_version = "begin_version\n(?P<version>\d+)\nend_version"
+        pattern_version = r"begin_version\n(?P<version>\d+)\nend_version"
         versions = re.findall(pattern_version, self.s_sas)
         if len(versions) != 1:
             raise ValueError(
@@ -186,7 +186,7 @@ class SasParser:
 
     def parse_metric(self) -> int:
         """The metric should be 0 or 1"""
-        pattern_metric = "begin_metric\n(?P<version>\d+)\nend_metric"
+        pattern_metric = r"begin_metric\n(?P<version>\d+)\nend_metric"
         metrics = re.findall(pattern_metric, self.s_sas)
         if len(metrics) != 1:
             raise ValueError(
@@ -198,7 +198,7 @@ class SasParser:
     def parse_vars(self) -> Tuple[SasVar, ...]:
         # Regex notes: [\s\S] matches all characters, including newlines
         # Putting ? after a quantifier makes it non-greedy, so that it stops as soon as it can
-        var_pattern = "begin_variable\n(?P<nm>.*)\n(?P<axiom_layer>.*)\n(?P<range>.*)\n(?P<vals>[\s\S]*?)\nend_variable"
+        var_pattern = r"begin_variable\n(?P<nm>.*)\n(?P<axiom_layer>.*)\n(?P<range>.*)\n(?P<vals>[\s\S]*?)\nend_variable"
         # TODO use finditer instead, so that we can use named capture groups.
         # Less error prone, more clear
         matches = re.findall(var_pattern, self.s_sas)
@@ -214,7 +214,7 @@ class SasParser:
         Must be run after parse_vars
         """
         mutex_pattern = (
-            "begin_mutex_group\n(?P<n_facts>\d+)\n(?P<facts>[\s\S]*?)\nend_mutex_group"
+            r"begin_mutex_group\n(?P<n_facts>\d+)\n(?P<facts>[\s\S]*?)\nend_mutex_group"
         )
         mutexes_lst: List[SasMutex] = []
 
@@ -232,7 +232,7 @@ class SasParser:
         return mutexes
 
     def parse_initial_state(self) -> SasState:
-        pattern_initial_state = "begin_state\n(?P<state>[\s\S]+?)\nend_state"
+        pattern_initial_state = r"begin_state\n(?P<state>[\s\S]+?)\nend_state"
         s_state = re.search(pattern_initial_state, self.s_sas).group("state")
         vals = s_state.splitlines()
         assert len(vals) == len(self.sas_vars)
@@ -243,7 +243,7 @@ class SasParser:
         return self.initial_state
 
     def parse_goal(self) -> SasPartialState:
-        pattern_goal = "begin_goal\n(?P<n>\d+)\n(?P<var_vals>[\s\S]+?)\nend_goal"
+        pattern_goal = r"begin_goal\n(?P<n>\d+)\n(?P<var_vals>[\s\S]+?)\nend_goal"
         s_goal = re.search(pattern_goal, self.s_sas).group("var_vals")
         var_val_strs = s_goal.splitlines()
         var_val_pairs = tuple(
@@ -253,9 +253,11 @@ class SasParser:
         return self.goal
 
     def parse_axioms(self) -> Tuple[SasAxiom, ...]:
-        pattern_head = "(?P<var_num>\d+) (?P<val_num_old>\d+) (?P<val_num_new>\d+)"
+        pattern_head = r"(?P<var_num>\d+) (?P<val_num_old>\d+) (?P<val_num_new>\d+)"
         pattern_axiom = (
-            f"begin_rule\n(?P<n>\d+)\n(?P<conditions>[\s\S]*?){pattern_head}\nend_rule"
+            r"begin_rule\n(?P<n>\d+)\n(?P<conditions>[\s\S]*?)"
+            + pattern_head
+            + r"\nend_rule"
         )
         axioms_lst: List[SasAxiom] = []
         for m_axiom in re.finditer(pattern_axiom, self.s_sas):
@@ -283,7 +285,7 @@ class SasParser:
         return self.axioms
 
     def parse_operators(self) -> Tuple[SasOperator, ...]:
-        pattern_operator_count = "end_goal\n(?P<n>\d+)\nbegin_operator"
+        pattern_operator_count = r"end_goal\n(?P<n>\d+)\n"
         n_operators = int(re.search(pattern_operator_count, self.s_sas).group("n"))
 
         operators: List[SasOperator] = []
