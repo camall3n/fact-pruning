@@ -623,6 +623,7 @@ def pddl_to_sas(task: pddl.Task) -> sas_tasks.SASTask:
                 sas_task, options.reorder_variables,
                 options.filter_unimportant_vars)
 
+    sas_task._sort_all()
     return sas_task
 
 

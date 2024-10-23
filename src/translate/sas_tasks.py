@@ -26,13 +26,30 @@ class SASTask:
         self.mutexes = mutexes
         self.init = init
         self.goal = goal
-        self.operators = sorted(operators, key=lambda op: (
-            op.name, op.prevail, op.pre_post))
-        self.axioms = sorted(axioms, key=lambda axiom: (
-            axiom.condition, axiom.effect))
+        # self.operators = sorted(operators, key=lambda op: (
+        #     op.name, op.prevail, op.pre_post))
+        # self.axioms = sorted(axioms, key=lambda axiom: (
+        #     axiom.condition, axiom.effect))
+        self.operators = operators
+        self.axioms = axioms
         self.metric = metric
         if DEBUG:
             self.validate()
+
+    def _sort_all(self):
+        for m in self.mutexes:
+            m._sort()
+
+        self.goal._sort()
+
+        self.operators = sorted(self.operators, key=lambda op: (
+            op.name, op.prevail, op.pre_post))
+        for op in self.operators:
+            op._sort()
+        self.axioms = sorted(self.axioms, key=lambda axiom: (
+            axiom.condition, axiom.effect))
+        for op in self.axioms:
+            op._sort()
 
     def validate(self):
         """Fail an assertion if the task is invalid.
@@ -186,7 +203,11 @@ class SASVariables:
 
 class SASMutexGroup:
     def __init__(self, facts: List[VarValPair]):
-        self.facts = sorted(facts)
+        # self.facts = sorted(facts)
+        self.facts = facts
+
+    def _sort(self):
+        self.facts = sorted(self.facts)
 
     def validate(self, variables):
         """Assert that the facts in the mutex group are sorted and unique
@@ -238,7 +259,11 @@ class SASInit:
 
 class SASGoal:
     def __init__(self, pairs: List[Tuple[int, int]]) -> None:
-        self.pairs = sorted(pairs)
+        # self.pairs = sorted(pairs)
+        self.pairs = pairs
+
+    def _sort(self):
+        self.pairs = sorted(self.pairs)
 
     def validate(self, variables):
         """Assert that the goal is nonempty and a valid condition."""
@@ -264,9 +289,15 @@ class SASOperator:
     def __init__(self, name: str, prevail: List[VarValPair], pre_post:
             List[Tuple[int, int, int, List[VarValPair]]], cost: int) -> None:
         self.name = name
-        self.prevail = sorted(prevail)
-        self.pre_post = self._canonical_pre_post(pre_post)
+        # self.prevail = sorted(prevail)
+        # self.pre_post = self._canonical_pre_post(pre_post)
+        self.prevail = prevail
+        self.pre_post = pre_post
         self.cost = cost
+
+    def _sort(self):
+        self.prevail = sorted(self.prevail)
+        self.pre_post = self._canonical_pre_post(self.pre_post)
 
     def _canonical_pre_post(self, pre_post):
         # Return a sorted and uniquified version of pre_post. We would
@@ -410,12 +441,16 @@ class SASOperator:
 
 class SASAxiom:
     def __init__(self, condition: List[VarValPair], effect: VarValPair) -> None:
-        self.condition = sorted(condition)
+        # self.condition = sorted(condition)
+        self.condition = condition
         self.effect = effect
         assert self.effect[1] in (0, 1)
 
         for _, val in condition:
             assert val >= 0, condition
+
+    def _sort(self):
+        self.condition = sorted(self.condition)
 
     def validate(self, variables, init):
 

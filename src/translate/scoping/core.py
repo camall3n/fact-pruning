@@ -128,6 +128,7 @@ def scope_sas(
     scoping_task = ScopingTask.from_sas(sas_task)
     scoped_task = scope(scoping_task, scoping_options)
     scoped_sas = scoped_task.to_sas()
+    scoped_sas._sort_all()
 
     if scoping_options.write_output_file:
         filepath, ext = os.path.splitext(sas_path)
