@@ -11,6 +11,8 @@ from scoping.factset import FactSet, VarValPair
 from scoping.options import ScopingOptions
 from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
+import translate
+from translate import timers
 
 
 def scope_backward(
@@ -122,6 +124,7 @@ def scope_sas(
     sas_path: str,
     scoping_options: ScopingOptions,
 ):
+    timer = timers.Timer()
     parser = SasParser(pth=sas_path)
     parser.parse()
     sas_task: fd.SASTask = parser.to_fd()
@@ -129,12 +132,15 @@ def scope_sas(
     scoped_task = scope(scoping_task, scoping_options)
     scoped_sas = scoped_task.to_sas()
     scoped_sas._sort_all()
+    translate.dump_statistics(scoped_sas)
 
     if scoping_options.write_output_file:
         filepath, ext = os.path.splitext(sas_path)
         output_filename = filepath + "_scoped" + ext
-        with open(output_filename, "w") as f:
-            scoped_sas.output(f)
+        with timers.timing("Writing output"):
+            with open(output_filename, "w") as f:
+                scoped_sas.output(f)
+    print("Done! %s" % timer)
 
 
 def parse_args():
