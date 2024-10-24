@@ -60,7 +60,21 @@ exp.add_fetcher("data/sorted-basic-eval")
 exp.add_fetcher("data/scoping-eval")
 # exp.add_fetcher("data/sorted-basic_cg-eval")
 
-attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES
+attributes = [
+  "translator_axioms",
+  "translator_derived_variables",
+  "translator_facts",
+  "translator_goal_facts",
+  "translator_mutex_groups",
+  "translator_operators",
+  "translator_peak_memory",
+  "translator_task_size",
+  "translator_time_done",
+  "translator_time_writing_output",
+  "translator_total_mutex_groups_size",
+  "translator_variables"
+]
+
 # exp.add_comparison_table_step(attributes=attributes)
 exp.add_absolute_report_step(attributes=attributes)
 
