@@ -50,6 +50,21 @@ def prune_facts(fact_list: list[VarValPair], relevant_facts: FactSet):
     return [fact for fact in fact_list if fact in relevant_facts]
 
 
+def prune_mutexes(
+    mutex_list: list[list[VarValPair]], relevant_facts: FactSet
+) -> list[list[VarValPair]]:
+    # Prune irrelevant facts
+    mutexes = [prune_facts(mutex, relevant_facts) for mutex in mutex_list]
+    # Prune mutexes with < 2 facts
+    mutexes = [mutex for mutex in mutexes if mutex and len(mutex) > 1]
+    # Prune mutexes with < 2 variables
+    mutex_facts = [FactSet(mutex) for mutex in mutexes]
+    mutexes = [
+        mutex for mutex, facts in zip(mutexes, mutex_facts) if len(facts.variables) > 1
+    ]
+    return mutexes
+
+
 def prune_task(
     scoping_task: ScopingTask, facts: FactSet, actions: list[VarValAction]
 ) -> ScopingTask:
@@ -71,7 +86,7 @@ def prune_task(
         )
         for a in actions
     ]
-    mutexes = [prune_facts(mutex, facts) for mutex in scoping_task.mutexes]
+    mutexes = prune_mutexes(scoping_task.mutexes, facts)
     axioms = [
         VarValAction(
             name="",
