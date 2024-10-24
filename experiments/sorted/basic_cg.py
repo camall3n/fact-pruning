@@ -20,7 +20,7 @@ BUILDS = ["release"]
 
 CONFIG_NICKS = []
 
-CONFIG_NICKS.append(('basic', ["--translate"]))
+CONFIG_NICKS.append(('basic_cg', ["--translate-options", "--search-options"]))
 
 CONFIGS = [
     IssueConfig(
