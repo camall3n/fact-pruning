@@ -122,11 +122,12 @@ class ScopingTask:
         return True
 
     def dump(self):
-        print(f"domains={self.domains}")
-        print(f"init={self.init}")
-        print(f"goal={self.goal}")
+        print(f"domains={self.domains},")
+        print(f"init={self.init},")
+        print(f"goal={self.goal},")
         print("actions=[")
         for a in self.actions:
-            print(f"    {a.name}, pre={a.precondition}")
-            print(f"         eff={a.effect}")
+            print(
+                f"    VarValAction('{a.name}', {a.precondition}, {a.effect}, {a.cost}),"
+            )
         print("]")
