@@ -76,8 +76,15 @@ attributes = [
   "translator_variables"
 ]
 
-# exp.add_comparison_table_step(attributes=attributes)
-exp.add_absolute_report_step(attributes=attributes)
+def rename_algorithms(run):
+    name = run["algorithm"]
+    paper_names = {"loop-sorted-basic": "FD noCG", "loop-sorted-basic_cg": "FD CG"}
+    run["algorithm"] = paper_names.get(name, name)
+    return run
+
+algorithms = ["FD noCG", "FD CG", "vanilla", "val-vanilla", "CL", "val-CL"]
+
+exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algorithms)
 
 exp.run_steps()
 
