@@ -80,6 +80,7 @@ for alg, conf in ALGS.items():
         run.set_property("problem", task.problem)
         run.set_property("algorithm", alg)
         run.set_property("repo", common_setup.get_repo_base())
+        run.set_property("experiment_name", common_setup.get_experiment_name())
         # BaseReport needs the following properties:
         # 'time_limit', 'memory_limit'.
         run.set_property("time_limit", TIME_LIMIT)
