@@ -6,13 +6,14 @@ comm==0.2.2
 debugpy==1.8.2
 decorator==5.1.1
 executing==2.0.1
-glfw==2.7.0
+glfw==2.5.1
 iceberg-dsl==0.1.2
 ipykernel==6.29.5
 ipython==8.26.0
 jedi==0.19.1
 jupyter_client==8.6.2
 jupyter_core==5.7.2
+lxml==5.3.0
 matplotlib-inline==0.1.7
 nest-asyncio==1.6.0
 numpy==2.1.1
@@ -34,7 +35,7 @@ pygraphviz==1.13
 python-dateutil==2.9.0.post0
 pytz==2024.1
 pyzmq==26.0.3
--e git+https://github.com/aibasel/downward.git@f00c1efb4087b0ec48ef806fdb4afdaa595f8958#egg=scoping
+-e git+https://github.com/aibasel/downward.git@db0fe5809e05c772deb98a2e3d797aeb126faf4d#egg=scoping
 setuptools==70.2.0
 six==1.16.0
 skia-python==87.6
