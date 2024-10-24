@@ -32,10 +32,23 @@ def test_pruning_value_names():
     scope_sas(sas_path, scoping_options=ScopingOptions(0, 0, 1, 0, 0, False))
 
 
+def test_large_itertools_product():
+    sas_path = "../../benchmarks/basic/tidybot-opt11-strips/p02.sas"
+    scope_sas(sas_path, scoping_options=ScopingOptions(1, 1, 1, 1, 1, False))
+
+
+def test_movie():
+    sas_path = "../../benchmarks/basic/movie/prob01.sas"
+    scope_sas(sas_path, scoping_options=ScopingOptions(1, 1, 1, 1, 1, False))
+
+
+# %%
 test_gripper()
 test_airport()
 test_agricola()
 test_dummy_unsolvable()
 test_pruning_value_names()
+# test_large_itertools_product()
+test_movie()
 
 print("All tests passed.")
