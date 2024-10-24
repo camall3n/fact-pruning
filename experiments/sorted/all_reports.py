@@ -58,7 +58,7 @@ exp.add_parser(SaSParser())
 
 exp.add_fetcher("data/sorted-basic-eval")
 exp.add_fetcher("data/scoping-eval")
-# exp.add_fetcher("data/sorted-basic_cg-eval")
+exp.add_fetcher("data/sorted-basic_cg-eval")
 exp.add_fetcher("data/scoping-CL-eval")
 
 attributes = [
