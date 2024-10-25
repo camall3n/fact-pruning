@@ -56,10 +56,12 @@ exp.add_parser(exp.SINGLE_SEARCH_PARSER)
 exp.add_parser(exp.PLANNER_PARSER)
 exp.add_parser(SaSParser())
 
-exp.add_fetcher("data/sorted-basic-eval")
-exp.add_fetcher("data/scoping-eval")
-exp.add_fetcher("data/sorted-basic_cg-eval")
-exp.add_fetcher("data/scoping-CL-eval")
+exp.add_fetcher("data/sorted-basic-eval", merge=False)
+exp.add_fetcher("data/scoping-eval", merge=True)
+exp.add_fetcher("data/sorted-basic_cg-eval", merge=True)
+exp.add_fetcher("data/scoping-CL-eval", merge=True)
+exp.add_fetcher("data/scoping-M-eval", merge=True)
+exp.add_fetcher("data/scoping-MCL-eval", merge=True)
 
 attributes = [
   "translator_axioms",
@@ -82,7 +84,7 @@ def rename_algorithms(run):
     run["algorithm"] = paper_names.get(name, name)
     return run
 
-algorithms = ["FD noCG", "FD CG", "vanilla", "val-vanilla", "CL", "val-CL"]
+algorithms = ["FD noCG", "FD CG", "vanilla", "CL", "M", "MCL", "val-vanilla", "val-CL", "val-M", "val-MCL"]
 
 exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algorithms)
 
