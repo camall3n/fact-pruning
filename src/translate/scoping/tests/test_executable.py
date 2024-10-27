@@ -42,6 +42,11 @@ def test_movie():
     scope_sas(sas_path, scoping_options=ScopingOptions(1, 1, 1, 1, 1, False))
 
 
+def test_floortile():
+    sas_path = "../../benchmarks/basic/floortile-opt11-strips/opt-p01-001.sas"
+    scope_sas(sas_path, scoping_options=ScopingOptions(1, 1, 1, 1, 0, True))
+
+
 # %%
 test_gripper()
 test_airport()
@@ -50,5 +55,6 @@ test_dummy_unsolvable()
 test_pruning_value_names()
 # test_large_itertools_product()
 test_movie()
+test_floortile()
 
 print("All tests passed.")

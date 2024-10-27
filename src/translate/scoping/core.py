@@ -13,6 +13,8 @@ from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
 import translate
 from translate import timers
+from translate import simplify
+from translate import unsolvable_sas_task, solvable_sas_task
 
 
 def scope_backward(
@@ -141,6 +143,12 @@ def scope_sas(
     scoping_task = ScopingTask.from_sas(sas_task)
     scoped_task = scope(scoping_task, scoping_options)
     scoped_sas = scoped_task.to_sas()
+    try:
+        simplify.filter_unreachable_propositions(scoped_sas)
+    except simplify.Impossible:
+        return unsolvable_sas_task("Simplified to trivially false goal")
+    except simplify.TriviallySolvable:
+        return solvable_sas_task("Simplified to empty goal")
     scoped_sas._sort_all()
     translate.dump_statistics(scoped_sas)
 
