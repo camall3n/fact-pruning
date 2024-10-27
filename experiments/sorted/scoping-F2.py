@@ -32,9 +32,13 @@ ALGS = {
     "val-MCL" : [sys.executable, PLANNER, "--disable-loop", "--disable-forward-pass"],
     "val-FMCL" : [sys.executable, PLANNER, "--disable-loop"],
     "val-FLMCL" : [sys.executable, PLANNER],
+# 
+    "val-Fvanilla" : [sys.executable, PLANNER, "--disable-loop", "--disable-merging", "--disable-causal-links"],
+    "val-FM" : [sys.executable, PLANNER, "--disable-loop", "--disable-causal-links"],
+    "val-FCL" : [sys.executable, PLANNER, "--disable-loop", "--disable-merging"],
 }
 
-ALGORITHMS = ["vanilla", "val-vanilla"]
+ALGORITHMS = ["val-FM"]
 
 SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 

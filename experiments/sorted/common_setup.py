@@ -117,7 +117,7 @@ def get_script_dir():
     return os.path.dirname(get_script())
 
 
-def get_experiment_name():
+def get_experiment_name(name_only=False):
     """Get name for experiment.
 
     Derived from the absolute filename of the main script, e.g.
@@ -125,6 +125,8 @@ def get_experiment_name():
     script = os.path.abspath(get_script())
     script_dir = os.path.basename(os.path.dirname(script))
     script_base = os.path.splitext(os.path.basename(script))[0]
+    if name_only:
+        return script_base
     return "%s-%s" % (script_dir, script_base)
 
 
