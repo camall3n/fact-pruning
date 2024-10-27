@@ -28,16 +28,6 @@ def test_sas_parsing():
     print(sas_output)
 
 
-def equal_sas_tasks(task1: fd.SASTask, task2: fd.SASTask):
-    sas1 = io.StringIO()
-    task1.output(sas1)
-
-    sas2 = io.StringIO()
-    task2.output(sas2)
-
-    return sas1.getvalue() == sas2.getvalue()
-
-
 def test_sas_conversion():
     sas_path = "../../benchmarks/basic/gripper/prob01.sas"
     parser = SasParser(pth=sas_path)
@@ -45,7 +35,7 @@ def test_sas_conversion():
     sas_task: fd.SASTask = parser.to_fd()
     scoping_task: ScopingTask = ScopingTask.from_sas(sas_task)
     converted_sas = scoping_task.to_sas()
-    assert equal_sas_tasks(sas_task, converted_sas)
+    assert sas_task == converted_sas
 
 
 # %%

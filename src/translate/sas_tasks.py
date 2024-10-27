@@ -1,3 +1,4 @@
+import io
 from typing import List, Tuple
 
 SAS_FILE_VERSION = 3
@@ -50,6 +51,13 @@ class SASTask:
             axiom.condition, axiom.effect))
         for op in self.axioms:
             op._sort()
+
+    def __eq__(self, other: "SASTask") -> bool:
+        self_str = io.StringIO()
+        other_str = io.StringIO()
+        self.output(self_str)
+        other.output(other_str)
+        return self_str.getvalue() == other_str.getvalue()
 
     def validate(self):
         """Fail an assertion if the task is invalid.
