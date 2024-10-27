@@ -148,15 +148,30 @@ def scope_sas(
     parser = SasParser(pth=sas_path)
     parser.parse()
     sas_task: fd.SASTask = parser.to_fd()
-    scoping_task = ScopingTask.from_sas(sas_task)
-    scoped_task = scope(scoping_task, scoping_options)
-    scoped_sas = scoped_task.to_sas()
-    try:
-        simplify.filter_unreachable_propositions(scoped_sas)
-    except simplify.Impossible:
-        return unsolvable_sas_task("Simplified to trivially false goal")
-    except simplify.TriviallySolvable:
-        return solvable_sas_task("Simplified to empty goal")
+    while True:
+        scoping_task = ScopingTask.from_sas(sas_task)
+        scoped_task = scope_backward(
+            scoping_task,
+            enable_merging=scoping_options.enable_merging,
+            enable_causal_links=scoping_options.enable_causal_links,
+            enable_fact_based=scoping_options.enable_fact_based,
+        )
+        scoped_sas = scoped_task.to_sas()
+        if scoping_options.enable_forward_pass:
+            try:
+                simplify.filter_unreachable_propositions(scoped_sas)
+            except simplify.Impossible:
+                return unsolvable_sas_task("Simplified to trivially false goal")
+            except simplify.TriviallySolvable:
+                return solvable_sas_task("Simplified to empty goal")
+        if (
+            scoping_options.enable_loop
+            and scoping_options.enable_forward_pass
+            and (scoped_sas != sas_task)
+        ):
+            sas_task = scoped_sas
+        else:
+            break
     scoped_sas._sort_all()
     translate.dump_statistics(scoped_sas)
 
