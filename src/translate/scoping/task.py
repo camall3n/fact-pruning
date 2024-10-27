@@ -14,7 +14,7 @@ class ScopingTask:
     mutexes: list[list[VarValPair]] = field(default_factory=list)
     axioms: list[VarValAction] = field(default_factory=list)
     metric: bool = False
-    value_names: dict[int, list[int]] = field(default_factory=dict)
+    value_names: dict[int, list[str]] = field(default_factory=dict)
 
     def from_sas(sas_task: fd.SASTask) -> "ScopingTask":
         domains = FactSet(
@@ -44,29 +44,47 @@ class ScopingTask:
     def to_sas(self) -> fd.SASTask:
         sorted_vars = sorted(self.domains.variables)
         var_index = {var: i for i, var in enumerate(sorted_vars)}
+        sorted_vals = {var: sorted(vals) for var, vals in self.domains}
+        val_index = {
+            var: {val: i for i, val in enumerate(vals)}
+            for var, vals in sorted_vals.items()
+        }
+        [vals.update({-1: -1}) for _, vals in val_index.items()]
         variables = fd.SASVariables(
             ranges=[len(self.domains[var]) for var in sorted_vars],
             axiom_layers=[-1 for _ in sorted_vars],
-            value_names=[self.value_names[var] for var in sorted_vars],
+            value_names=[
+                [self.value_names[var][val] for val in sorted_vals[var]]
+                for var in sorted_vars
+            ],
         )
         mutexes = (
             []
             if self.mutexes is None
             else [
-                fd.SASMutexGroup(facts=[(var_index[var], val) for var, val in mutex])
+                fd.SASMutexGroup(
+                    facts=[(var_index[var], val_index[var][val]) for var, val in mutex]
+                )
                 for mutex in self.mutexes
                 if mutex and len(mutex) > 1
             ]
         )
-        init = fd.SASInit(values=[val for _, val in sorted(self.init)])
-        goal = fd.SASGoal([(var_index[var], val) for var, val in self.goal])
+        init = fd.SASInit(
+            values=[val_index[var][val] for var, val in sorted(self.init)]
+        )
+        goal = fd.SASGoal(
+            [(var_index[var], val_index[var][val]) for var, val in self.goal]
+        )
         operators = [
             fd.SASOperator(
                 name=a.name,
-                prevail=[(var_index[var], val) for var, val in a.prevail],
+                prevail=[
+                    (var_index[var], val_index[var][val]) for var, val in a.prevail
+                ],
                 pre_post=[
-                    (var_index[var], *etc) for var, *etc in a.pre_post
-                ],  # var, pre, post, cond
+                    (var_index[var], val_index[var][pre], val_index[var][post], cond)
+                    for var, pre, post, cond in a.pre_post
+                ],
                 cost=a.cost,
             )
             for a in self.actions
@@ -76,8 +94,14 @@ class ScopingTask:
             if self.axioms is None
             else [
                 fd.SASAxiom(
-                    condition=[(var_index[var], val) for var, val in ax.precondition],
-                    effect=(var_index[ax.effect[0][0]], ax.effect[0][1]),
+                    condition=[
+                        (var_index[var], val_index[var][val])
+                        for var, val in ax.precondition
+                    ],
+                    effect=(
+                        var_index[ax.effect[0][0]],
+                        val_index[ax.effect[0][0]][ax.effect[0][1]],
+                    ),
                 )
                 for ax in self.axioms
                 if ax.effect
