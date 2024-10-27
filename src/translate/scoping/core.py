@@ -64,6 +64,14 @@ def prune_mutexes(
     mutexes = [
         mutex for mutex, facts in zip(mutexes, mutex_facts) if len(facts.variables) > 1
     ]
+    # Prune duplicate mutexes, then convert back to list of lists
+    mutexes = list(
+        map(
+            list,
+            dict.fromkeys(tuple(dict.fromkeys(mutex)) for mutex in mutexes),
+        )
+    )
+
     return mutexes
 
 
