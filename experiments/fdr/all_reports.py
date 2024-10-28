@@ -84,7 +84,7 @@ def rename_algorithms(run):
     run["algorithm"] = paper_names.get(name, name)
     return run
 
-algorithms = ["FD noCG", "FD CG", "vanilla", "CL", "M", "MCL", "val-vanilla", "val-CL", "val-M", "val-MCL"]
+algorithms = ["FD noCG", "FD CG", "vanilla", "CL", "FCL", "M", "MCL", "val-vanilla", "val-CL", "val-FCL","val-M", "val-MCL"]
 
 exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algorithms)
 
