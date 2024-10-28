@@ -43,9 +43,11 @@ ALGS = {
 # ALGORITHMS = ["vanilla", "val-FCL"]
 # ALGORITHMS = ["val-vanilla", "val-CL", "val-M", "val-MCL"]
 
-ALGORITHMS = ["M", "CL", "MCL", "val-Fvanilla", "val-FM"]
+ALGORITHMS = ["M", "CL", "MCL"]
+
 # ALGORITHMS = ["FMCL", "val-FMCL"]
 # ALGORITHMS = ["FLMCL", "val-FLMCL"]
+# ALGORITHMS = ["val-Fvanilla", "val-FM"]
 
 SUITE = [ "bi-partite-sas", "chain-0.1-sas", "chain-0.5-sas", "dag-0.1-sas", "dag-0.5-sas", "directed-chain-sas", "inverted-fork-sas", "polytree-0.25-sas", "polytree-0.75-sas", "random-0.25-sas", "random-0.75-sas", "star-0.25-sas", "star-0.75-sas", "bidirectional-bi-partite-sas", "chain-0.25-sas", "chain-0.75-sas", "dag-0.25-sas", "dag-0.75-sas", "fork-sas", "polytree-0.1-sas", "polytree-0.5-sas", "random-0.1-sas", "random-0.5-sas", "star-0.1-sas", "star-0.5-sas", "tree-sas"]
 
