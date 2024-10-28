@@ -62,6 +62,11 @@ exp.add_fetcher("data/sorted-basic_cg-eval", merge=True)
 exp.add_fetcher("data/scoping-CL-eval", merge=True)
 exp.add_fetcher("data/scoping-M-eval", merge=True)
 exp.add_fetcher("data/scoping-MCL-eval", merge=True)
+exp.add_fetcher("data/scoping-F1-eval", merge=True)
+exp.add_fetcher("data/scoping-F3-eval", merge=True)
+exp.add_fetcher("data/scoping-F2-eval", merge=True)
+exp.add_fetcher("data/scoping-F4-eval", merge=True)
+exp.add_fetcher("data/scoping-F6-eval", merge=True)
 
 attributes = [
   "translator_axioms",
@@ -84,7 +89,7 @@ def rename_algorithms(run):
     run["algorithm"] = paper_names.get(name, name)
     return run
 
-algorithms = ["FD noCG", "FD CG", "vanilla", "CL", "M", "MCL", "val-vanilla", "val-CL", "val-M", "val-MCL"]
+algorithms = ["FD noCG", "FD CG", "vanilla", "CL", "M", "MCL", "FMCL", "val-vanilla", "val-Fvanilla", "val-CL", "val-FCL", "val-M", "val-FM", "val-MCL", "val-FMCL"]
 
 exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algorithms)
 
