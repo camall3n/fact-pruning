@@ -140,14 +140,10 @@ def scope(
     return scoped_task
 
 
-def scope_sas(
-    sas_path: str,
+def scope_sas_task(
+    sas_task: fd.SASTask,
     scoping_options: ScopingOptions,
 ):
-    timer = timers.Timer()
-    parser = SasParser(pth=sas_path)
-    parser.parse()
-    sas_task: fd.SASTask = parser.to_fd()
     while True:
         scoping_task = ScopingTask.from_sas(sas_task)
         scoped_task = scope_backward(
@@ -173,6 +169,18 @@ def scope_sas(
         else:
             break
     scoped_sas._sort_all()
+    return scoped_sas
+
+
+def scope_sas_file(
+    sas_path: str,
+    scoping_options: ScopingOptions,
+):
+    timer = timers.Timer()
+    parser = SasParser(pth=sas_path)
+    parser.parse()
+    sas_task: fd.SASTask = parser.to_fd()
+    scoped_sas = scope_sas_task(sas_task, scoping_options)
     translate.dump_statistics(scoped_sas)
 
     if scoping_options.write_output_file:
@@ -212,7 +220,7 @@ def main():
         enable_forward_pass=args.enable_forward_pass,
         enable_loop=args.enable_loop,
     )
-    scope_sas(args.sas_file, scoping_options)
+    scope_sas_file(args.sas_file, scoping_options)
 
 
 if __name__ == "__main__":
