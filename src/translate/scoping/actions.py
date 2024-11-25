@@ -91,6 +91,13 @@ class VarValAction:
             [(var, val) for (var, val) in self.effect if var in relevant_variables]
         ), self.cost
 
+    def can_run(self, state: List[VarValPair]) -> bool:
+        state_facts = set(state)
+        for fact in self.precondition:
+            if fact not in state_facts:
+                return False
+        return True
+
     def dump(self):
         print(self.name)
         for fact in self.precondition:

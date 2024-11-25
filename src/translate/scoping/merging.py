@@ -60,7 +60,88 @@ def merge(
         precond_facts.union(get_precondition_facts(a, variable_domains))
         if not a.precondition:
             return FactSet()
-    if not any(values == variable_domains[var] for var, values in precond_facts):
+    complete_vars = [
+        var for var, values in precond_facts if values == variable_domains[var]
+    ]
+    if not complete_vars:
+        return precond_facts
+
+    # Collect the precondition variables
+    precond_vars_by_action = [set([var for var, _ in a.precondition]) for a in actions]
+    all_precond_vars = sorted(set().union(*precond_vars_by_action))
+
+    reduced_var_domains = FactSet(variable_domains)
+    removed_vars = []
+
+    # See whether we can remove any of the complete variables
+    for var_to_remove in complete_vars:
+        safe_to_remove = True
+        # scan over all possible assignments to the remaining variables
+        remaining_vars = [var for var in all_precond_vars if var != var_to_remove]
+        remaining_var_domains = [reduced_var_domains[var] for var in remaining_vars]
+        remaining_var_partial_states = itertools.product(*remaining_var_domains)
+        for partial_state in remaining_var_partial_states:
+            # prepare to reconstruct the full state for each value of var_to_remove
+            partial_state = list(partial_state)
+            var_to_remove_index = all_precond_vars.index(var_to_remove)
+            partial_state.insert(var_to_remove_index, None)
+            always_has_action = True
+            never_has_action = True
+            for val in reduced_var_domains[var_to_remove]:
+                partial_state[var_to_remove_index] = val
+                full_state = list(zip(all_precond_vars, partial_state))
+                has_action = any(action.can_run(full_state) for action in actions)
+                if has_action:
+                    never_has_action = False
+                else:
+                    always_has_action = False
+                if not (always_has_action or never_has_action):
+                    break
+
+            if not (always_has_action or never_has_action):
+                # found a partial state with inconsistent action applicability so
+                # this var can't be removed. (no need to check more partial states)
+                safe_to_remove = False
+                break
+
+        if safe_to_remove:
+            # for the rest of the merge, we can set this var to a single value
+            # to speed up the remaining checks.
+            first_val = reduced_var_domains[var_to_remove].pop()
+            reduced_var_domains[var_to_remove].clear()
+            reduced_var_domains[var_to_remove].add(first_val)
+            removed_vars.append(var_to_remove)
+
+    relevant_precond_facts = FactSet()
+    for var in all_precond_vars:
+        if var not in removed_vars:
+            relevant_precond_facts.union(var, precond_facts[var])
+    return relevant_precond_facts
+
+
+def merge_old(
+    actions: list[VarValAction],
+    relevant_variables: list[Any],
+    variable_domains: FactSet,
+) -> FactSet:
+    """Get the relevant precondition facts after merging actions"""
+    if len(actions) == 1:
+        return get_precondition_facts(actions[0], variable_domains)
+    h0 = actions[0].effect_hash(relevant_variables)
+    for a in actions[1:]:
+        h = a.effect_hash(relevant_variables)
+        assert h == h0, "Attempted to merge skills with different effects/costs"
+
+    # Merging only helps if at least one variable spans its whole domain
+    precond_facts = FactSet()
+    for a in actions:
+        precond_facts.union(get_precondition_facts(a, variable_domains))
+        if not a.precondition:
+            return FactSet()
+    complete_vars = [
+        var for var, values in precond_facts if values == variable_domains[var]
+    ]
+    if not complete_vars:
         return precond_facts
 
     # Collect the precondition variables
