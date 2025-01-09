@@ -41,6 +41,10 @@ class FactSet:
     def variables(self) -> list[Any]:
         return list(self.facts.keys())
 
+    @property
+    def n_facts(self) -> int:
+        return sum([len(values) for _, values in self])
+
     @overload
     def add(self, var: Any, val: Any) -> None: ...
     @overload
