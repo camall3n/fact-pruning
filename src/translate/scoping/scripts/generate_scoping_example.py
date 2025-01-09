@@ -16,7 +16,7 @@ def generate_task(max_n_vars=3, max_n_vals=3, max_n_actions=6):
     while not goal_reachable:
         n_variables = random.randint(2, max_n_vars)
         var_names = list("zyxwvuts"[:n_variables])
-        ranges = [random.randint(1, max_n_vals) for _ in var_names]
+        ranges = [random.randint(2, max_n_vals) for _ in var_names]
         domains = FactSet({var: set(range(r)) for var, r in zip(var_names, ranges)})
         n_actions = random.randint(2, max_n_actions)
         ac_names = "abcdefghijklmnopqr"[:n_actions]
