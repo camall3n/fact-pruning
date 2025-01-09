@@ -1,4 +1,4 @@
-(define (domain minecraft-contrived3-cam)
+(define (domain minecraft-large)
     (:requirements :equality :typing :negative-preconditions :universal-preconditions :existential-preconditions)
 
     (:types

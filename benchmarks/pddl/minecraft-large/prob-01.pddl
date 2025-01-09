@@ -1,6 +1,6 @@
-(define (problem minecraft-contrived3-cam-1)
+(define (problem minecraft-large-1)
 
-(:domain minecraft-contrived3-cam)
+(:domain minecraft-large)
 
 (:objects
 	steve - agent
