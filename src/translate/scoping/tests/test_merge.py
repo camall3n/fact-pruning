@@ -5,12 +5,34 @@ from scoping.factset import FactSet
 from scoping.merging import merge, merge_old
 
 
-a1 = VarValAction(
-    "a1",
-    [("x", 0), ("y", 0)],
-    [("x", 2), ("y", 2)],
-    1,
-)
+# a1 = VarValAction(
+#     "a1",
+#     [("x", 0), ("v1", 0)],
+#     [("x", 2)],
+#     1,
+# )
+
+# b1 = VarValAction(
+#     "b1",
+#     [("x", 0), ("v1", 1)],
+#     [("x", 2)],
+#     1,
+# )
+
+# a2 = VarValAction(
+#     "a2",
+#     [("x", 0), ("v2", 0)],
+#     [("x", 2)],
+#     1,
+# )
+
+# b2 = VarValAction(
+#     "b2",
+#     [("x", 0), ("v2", 1)],
+#     [("x", 2)],
+#     1,
+# )
+
 
 n_action_pairs = 17
 actions = [
