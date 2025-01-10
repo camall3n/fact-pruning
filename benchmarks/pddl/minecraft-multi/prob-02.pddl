@@ -13,6 +13,6 @@
         (hungry steve)
     )
 
-    (:goal tribe-has-food)
+    (:goal (and (tribe-has-food)))
 
 )

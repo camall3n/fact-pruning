@@ -1,10 +1,11 @@
 (define (domain minecraft-multi)
-    (:requirements :strips)
+    (:requirements :strips :disjunctive-preconditions)
 
     (:predicates
         (tribe-has-food)
         (hungry ?ag)
         (has-logs ?ag)
+        (has-planks ?ag)
         (has-sticks ?ag)
         (has-stone ?ag)
         (has-iron ?ag)
@@ -13,6 +14,7 @@
         (has-stone-pickaxe ?ag)
         (has-stone-axe ?ag)
         (has-shears ?ag)
+        (has-bed ?ag)
     )
 
     ; ---------- resources ----------
@@ -106,11 +108,11 @@
     (:action craft-shears
         :parameters (?ag)
         :precondition (and
-            (has-iron-ingot ?ag)
+            (has-iron ?ag)
             (not (has-shears ?ag))
         )
         :effect (and
-            (not (has-iron-ingot ?ag))
+            (not (has-iron ?ag))
             (has-shears ?ag)
         )
     )
