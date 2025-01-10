@@ -1,4 +1,4 @@
-(define (problem minecraft-small-2)
+(define (problem minecraft-small-02)
 
 (:domain minecraft-small)
 
