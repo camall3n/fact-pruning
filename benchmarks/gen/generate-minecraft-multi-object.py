@@ -27,12 +27,12 @@ def generate_problem(n_ag, n_int):
     state = [tab(1) + "(:init"]
     state += [tab(2) + "; ----- inventory -----"]
     state += ["\n".join([tab(2) + f"(hungry ag{i:02d})" for i in range(1, n_ag + 1)])]
-    state += [
-        "\n".join([tab(2) + f"(has-logs ag{i:02d} n00)" for i in range(1, n_ag + 1)])
-    ]
-    state += [
-        "\n".join([tab(2) + f"(has-sticks ag{i:02d} n00)" for i in range(1, n_ag + 1)])
-    ]
+    for resource in ["logs", "sticks", "iron", "wool"]:
+        state += [
+            "\n".join(
+                [tab(2) + f"(has-{resource} ag{i:02d} n00)" for i in range(1, n_ag + 1)]
+            )
+        ]
     state += [tab(2) + "; ----- misc -----"]
     state += [
         "\n".join([tab(2) + f"(are-seq n{i:02d} n{i+1:02d})" for i in range(n_int)])
@@ -50,7 +50,7 @@ def generate_problem(n_ag, n_int):
 # %% generate pddl
 pddl_dir = "../../benchmarks/pddl/minecraft-multi-object/"
 os.makedirs(pddl_dir, exist_ok=True)
-agent_counts = [2, 4, 8, 16, 32]
+agent_counts = [2, 4, 8, 16]
 int_maxima = [4, 8, 16]
 for n_ag in agent_counts:
     for n_int in int_maxima:
