@@ -160,14 +160,23 @@ def scope_sas_task(
                 return unsolvable_sas_task("Simplified to trivially false goal")
             except simplify.TriviallySolvable:
                 return solvable_sas_task("Simplified to empty goal")
-        if (
-            scoping_options.enable_loop
-            and scoping_options.enable_forward_pass
-            and (scoped_sas != sas_task)
-        ):
-            sas_task = scoped_sas
-        else:
-            break
+
+            if scoping_options.enable_loop:
+                n_vars_removed = len(sas_task.variables.ranges) - len(
+                    scoped_sas.variables.ranges
+                )
+                n_facts_removed = sum(sas_task.variables.ranges) - sum(
+                    scoped_sas.variables.ranges
+                )
+                n_actions_removed = len(sas_task.operators) - len(scoped_sas.operators)
+                something_was_removed = (
+                    n_vars_removed + n_facts_removed + n_actions_removed
+                )
+                if something_was_removed:
+                    sas_task = scoped_sas
+                    continue
+        break
+
     scoped_sas._sort_all()
     return scoped_sas
 
