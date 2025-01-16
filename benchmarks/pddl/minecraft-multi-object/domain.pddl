@@ -97,7 +97,8 @@
         :precondition (and
             (has-logs ?ag ?n_start)
             ; n_logs >= 2
-            (exists (?n_minus_one - int)
+            (exists
+                (?n_minus_one - int)
                 (and
                     (are-seq ?n_end ?n_minus_one)
                     (are-seq ?n_minus_one ?n_start)
@@ -183,7 +184,7 @@
     (:action craft-shears
         :parameters (?ag - agent ?n_start - int ?n_end - int)
         :precondition (and
-            (has-iron ?ag n_start)
+            (has-iron ?ag ?n_start)
             ; n_iron >= 2
             (exists
                 (?n_minus_one - int)
@@ -204,7 +205,7 @@
     (:action craft-fork
         :parameters (?ag - agent ?n_start - int ?n_end - int)
         :precondition (and
-            (has-iron ?ag n_start)
+            (has-iron ?ag ?n_start)
             ; n_iron >= 1
             (are-seq ?n_end ?n_start)
             (not (has-fork ?ag))

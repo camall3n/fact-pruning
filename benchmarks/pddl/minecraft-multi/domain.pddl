@@ -1,5 +1,9 @@
 (define (domain minecraft-multi)
-    (:requirements :strips :disjunctive-preconditions)
+    (:requirements :strips)
+
+    (:functions
+        (total-cost) - number
+    )
 
     (:predicates
         (tribe-has-food)
@@ -14,6 +18,7 @@
         (has-stone-pickaxe ?ag)
         (has-stone-axe ?ag)
         (has-shears ?ag)
+        (has-fork ?ag)
         (has-bed ?ag)
     )
 
@@ -64,44 +69,44 @@
     )
 
     (:action craft-wood-pickaxe
-        :parameters (?ag)
+        :parameters (?ag1 ?ag2 ?ag3)
         :precondition (and
-            (has-sticks ?ag)
-            (has-planks ?ag)
-            (not (has-wood-pickaxe ?ag))
+            (has-sticks ?ag1)
+            (has-planks ?ag2)
+            (not (has-wood-pickaxe ?ag3))
         )
         :effect (and
-            (not (has-sticks ?ag))
-            (not (has-planks ?ag))
-            (has-wood-pickaxe ?ag)
+            (not (has-sticks ?ag1))
+            (not (has-planks ?ag2))
+            (has-wood-pickaxe ?ag3)
         )
     )
 
     (:action craft-stone-pickaxe
-        :parameters (?ag)
+        :parameters (?ag1 ?ag2 ?ag3)
         :precondition (and
-            (has-sticks ?ag)
-            (has-stone ?ag)
-            (not (has-stone-pickaxe ?ag))
+            (has-sticks ?ag1)
+            (has-stone ?ag2)
+            (not (has-stone-pickaxe ?ag3))
         )
         :effect (and
-            (not (has-sticks ?ag))
-            (not (has-stone ?ag))
-            (has-stone-pickaxe ?ag)
+            (not (has-sticks ?ag1))
+            (not (has-stone ?ag2))
+            (has-stone-pickaxe ?ag3)
         )
     )
 
     (:action craft-stone-axe
-        :parameters (?ag)
+        :parameters (?ag1 ?ag2 ?ag3)
         :precondition (and
-            (has-sticks ?ag)
-            (has-stone ?ag)
-            (not (has-stone-axe ?ag))
+            (has-sticks ?ag1)
+            (has-stone ?ag2)
+            (not (has-stone-axe ?ag3))
         )
         :effect (and
-            (not (has-sticks ?ag))
-            (not (has-stone ?ag))
-            (has-stone-axe ?ag)
+            (not (has-sticks ?ag1))
+            (not (has-stone ?ag2))
+            (has-stone-axe ?ag3)
         )
     )
 
@@ -114,6 +119,18 @@
         :effect (and
             (not (has-iron ?ag))
             (has-shears ?ag)
+        )
+    )
+
+    (:action craft-fork
+        :parameters (?ag)
+        :precondition (and
+            (has-iron ?ag)
+            (not (has-fork ?ag))
+        )
+        :effect (and
+            (not (has-iron ?ag))
+            (has-fork ?ag)
         )
     )
 
@@ -139,19 +156,24 @@
         :effect (and
             (tribe-has-food)
             (hungry ?ag)
+            (increase (total-cost) 50)
         )
     )
 
     (:action gather
         :parameters (?ag)
         :precondition (and (hungry ?ag))
-        :effect (and (tribe-has-food))
+        :effect (and
+            (tribe-has-food)
+            (increase (total-cost) 50)
+        )
     )
 
     (:action eat
         :parameters (?ag)
         :precondition (and
             (tribe-has-food)
+            (has-fork ?ag)
             (hungry ?ag)
         )
         :effect (and

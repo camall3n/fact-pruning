@@ -34,7 +34,7 @@ def generate_problem(n_agents):
 
 
 # %% generate pddl
-pddl_dir = "../../benchmarks/pddl/minecraft-multi-food/"
+pddl_dir = "../../benchmarks/pddl/minecraft-multi/"
 os.makedirs(pddl_dir, exist_ok=True)
 for i in range(20, 21):
     prob_str = generate_problem(i)
@@ -43,12 +43,12 @@ for i in range(20, 21):
         f.write(prob_str)
 
 # %% generate sas
-sas_dir = "../../benchmarks/sas/basic/minecraft-multi-food/"
+sas_dir = "../../benchmarks/sas/basic/minecraft-multi/"
 os.makedirs(sas_dir, exist_ok=True)
 
 domain_file = os.path.join(pddl_dir, "domain.pddl")
 for i in range(20, 21):
-    prob_file = os.path.join(pddl_dir, f"prob-{i:02d}.pddl")
+    prob_file = os.path.join(pddl_dir, f"prob-food-{i:02d}.pddl")
     sas_file = os.path.join(sas_dir, f"minecraft-multi-food-{i:02d}.sas")
     sys.argv = [
         "translate.py",
