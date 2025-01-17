@@ -49,7 +49,10 @@
         (= (total-cost) 0)
     )
 
-    (:goal (and (tribe-has-food)))
+    (:goal (and
+        (feast-is-ready)
+        (tribe-has-food)
+    ))
 
     (:metric minimize
         (total-cost)

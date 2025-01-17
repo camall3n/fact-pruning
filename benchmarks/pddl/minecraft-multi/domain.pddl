@@ -20,6 +20,14 @@
         (has-shears ?ag)
         (has-fork ?ag)
         (has-bed ?ag)
+        (feast-is-ready)
+        (tribe-has-pulled-pork)
+        (tribe-has-pulled-stir-fry)
+        (tribe-has-stew)
+        (tribe-has-food1)
+        (tribe-has-food2)
+        (tribe-has-food3)
+        (tribe-has-food4)
     )
 
     ; ---------- resources ----------
@@ -166,6 +174,97 @@
         :effect (and
             (tribe-has-food)
             (increase (total-cost) 50)
+        )
+    )
+
+    (:action slow-cook
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-pulled-pork)
+            (increase (total-cost) 20)
+        )
+    )
+
+    (:action stir-fry
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-pulled-stir-fry)
+            (increase (total-cost) 3)
+        )
+    )
+
+    (:action make-stew
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-stew)
+            (increase (total-cost) 10)
+        )
+    )
+
+    (:action cook1
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-food1)
+            (increase (total-cost) 101)
+        )
+    )
+
+    (:action cook2
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-food2)
+            (increase (total-cost) 102)
+        )
+    )
+
+    (:action cook3
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-food3)
+            (increase (total-cost) 103)
+        )
+    )
+
+    (:action cook4
+        :parameters (?ag)
+        :precondition (and
+            (tribe-has-food)
+        )
+        :effect (and
+            (not (tribe-has-food))
+            (feast-is-ready)
+            (tribe-has-food4)
+            (increase (total-cost) 104)
         )
     )
 
