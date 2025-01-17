@@ -1,6 +1,7 @@
 #!%cd ~/dev/downward/src/translate
 #
 import argparse
+from collections import defaultdict
 import os
 
 import sas_tasks as fd
@@ -11,7 +12,6 @@ from scoping.factset import FactSet, VarValPair
 from scoping.options import ScopingOptions
 from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
-import translate
 from translate import timers
 from translate import simplify
 from translate import unsolvable_sas_task, solvable_sas_task
@@ -22,8 +22,8 @@ def scope_backward(
     enable_merging: bool = True,
     enable_causal_links: bool = True,
     enable_fact_based: bool = True,
-) -> ScopingTask:
-    facts, actions = compute_goal_relevance(
+) -> tuple[ScopingTask, dict]:
+    facts, actions, info = compute_goal_relevance(
         scoping_task=scoping_task,
         enable_merging=enable_merging,
         enable_causal_links=enable_causal_links,
@@ -40,7 +40,7 @@ def scope_backward(
         for var, val in a.effect:
             if var in precond_facts.variables:
                 facts.add(var, val)
-    return prune_task(scoping_task, facts, actions)
+    return prune_task(scoping_task, facts, actions), info
 
 
 def scope_forward(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
@@ -117,13 +117,16 @@ def scope(
     scoping_task: ScopingTask,
     options: ScopingOptions,
 ):
+    aggregated_info = defaultdict(int)
     while True:
-        scoped_task = scope_backward(
+        scoped_task, info = scope_backward(
             scoping_task,
             enable_merging=options.enable_merging,
             enable_causal_links=options.enable_causal_links,
             enable_fact_based=options.enable_fact_based,
         )
+        for key, val in info.items():
+            aggregated_info[key] += val
         if options.enable_forward_pass:
             scoped_task, goal_reachable = scope_forward(scoped_task)
             if not goal_reachable:
@@ -143,15 +146,18 @@ def scope(
 def scope_sas_task(
     sas_task: fd.SASTask,
     scoping_options: ScopingOptions,
-):
+) -> tuple[fd.SASTask, dict]:
+    aggregated_info = defaultdict(int)
     while True:
         scoping_task = ScopingTask.from_sas(sas_task)
-        scoped_task = scope_backward(
+        scoped_task, info = scope_backward(
             scoping_task,
             enable_merging=scoping_options.enable_merging,
             enable_causal_links=scoping_options.enable_causal_links,
             enable_fact_based=scoping_options.enable_fact_based,
         )
+        for key, val in info.items():
+            aggregated_info[key] += val
         scoped_sas = scoped_task.to_sas()
         if scoping_options.enable_forward_pass:
             try:
@@ -178,19 +184,27 @@ def scope_sas_task(
         break
 
     scoped_sas._sort_all()
-    return scoped_sas
+    return scoped_sas, info
 
 
 def scope_sas_file(
     sas_path: str,
     scoping_options: ScopingOptions,
 ):
-    timer = timers.Timer()
     parser = SasParser(pth=sas_path)
     parser.parse()
     sas_task: fd.SASTask = parser.to_fd()
-    scoped_sas = scope_sas_task(sas_task, scoping_options)
-    translate.dump_statistics(scoped_sas)
+    scoped_sas, info = scope_sas_task(sas_task, scoping_options)
+    for key, val in sorted(info.items()):
+        print(f"{key}: {val}")
+    # translate.dump_statistics(scoped_sas)
+    info["n_operators"] = f"{len(sas_task.operators)} -> {len(scoped_sas.operators)}"
+    info["n_vars"] = (
+        f"{len(sas_task.variables.ranges)} -> {len(scoped_sas.variables.ranges)}"
+    )
+    info["n_facts"] = (
+        f"{sum(sas_task.variables.ranges)} -> {sum(scoped_sas.variables.ranges)}"
+    )
 
     if scoping_options.write_output_file:
         filepath, ext = os.path.splitext(sas_path)
@@ -198,7 +212,7 @@ def scope_sas_file(
         with timers.timing("Writing output"):
             with open(output_filename, "w") as f:
                 scoped_sas.output(f)
-    print("Done! %s" % timer)
+    return info
 
 
 def parse_args():

@@ -2,6 +2,7 @@
 #!%cd ~/dev/downward/src/translate
 
 # %%
+from collections import defaultdict
 from typing import Any, Tuple
 
 from sas_tasks import SASTask, VarValPair
@@ -70,7 +71,7 @@ def get_goal_relevant_facts(
     relevant_facts: FactSet,
     relevant_actions: list[VarValAction],
     enable_merging: bool = False,
-) -> FactSet:
+) -> tuple[FactSet, dict]:
     """Find all facts that appear in the (simplified) preconditions
     of the (possibly merged) relevant actions."""
     relevant_vars = relevant_facts.variables
@@ -81,11 +82,14 @@ def get_goal_relevant_facts(
         action_partitions = list(map(lambda x: [x], relevant_actions))
 
     relevant_facts = FactSet()
+    aggregated_info = defaultdict(int)
     for actions in action_partitions:
-        relevant_precond_facts = merge(actions, relevant_vars, domains)
+        relevant_precond_facts, info = merge(actions, relevant_vars, domains)
+        for key, val in info.items():
+            aggregated_info[key] += val
         relevant_facts.union(relevant_precond_facts)
 
-    return relevant_facts
+    return relevant_facts, info
 
 
 def goal_relevance_step(
@@ -97,7 +101,7 @@ def goal_relevance_step(
     enable_merging: bool = False,
     enable_causal_links: bool = False,
     enable_fact_based: bool = False,
-) -> Tuple[FactSet, list[VarValAction]]:
+) -> Tuple[FactSet, list[VarValAction], dict]:
     if enable_causal_links:
         filtered_facts = filter_causal_links(
             facts, init, relevant_actions, enable_fact_based=enable_fact_based
@@ -107,7 +111,7 @@ def goal_relevance_step(
     if not enable_fact_based:
         coarsen_facts_to_variables(filtered_facts, domains)
     relevant_actions = get_goal_relevant_actions(filtered_facts, actions)
-    relevant_facts = get_goal_relevant_facts(
+    relevant_facts, info = get_goal_relevant_facts(
         domains,
         filtered_facts,
         relevant_actions,
@@ -115,7 +119,7 @@ def goal_relevance_step(
     )
     relevant_facts.union(filtered_facts)
 
-    return relevant_facts, relevant_actions
+    return relevant_facts, relevant_actions, info
 
 
 def compute_goal_relevance(
@@ -123,7 +127,7 @@ def compute_goal_relevance(
     enable_merging: bool = False,
     enable_causal_links: bool = False,
     enable_fact_based: bool = False,
-) -> Tuple[FactSet, list[VarValAction]]:
+) -> Tuple[FactSet, list[VarValAction], dict]:
     relevant_facts = FactSet(scoping_task.goal)
     if not enable_fact_based:
         coarsen_facts_to_variables(relevant_facts, scoping_task.domains)
@@ -132,7 +136,7 @@ def compute_goal_relevance(
     prev_actions = []
     while relevant_facts != prev_facts or len(relevant_actions) != len(prev_actions):
         prev_facts, prev_actions = relevant_facts, relevant_actions
-        relevant_facts, relevant_actions = goal_relevance_step(
+        relevant_facts, relevant_actions, info = goal_relevance_step(
             scoping_task.domains,
             relevant_facts,
             scoping_task.init,
@@ -143,7 +147,7 @@ def compute_goal_relevance(
             enable_fact_based=enable_fact_based,
         )
     relevant_facts.add(scoping_task.init)
-    return relevant_facts, relevant_actions
+    return relevant_facts, relevant_actions, info
 
 
 # %%
@@ -179,7 +183,7 @@ if __name__ == "main":
 
     for merging in [False, True]:
         for causal_links in [False, True]:
-            facts, actions = compute_goal_relevance(
+            facts, actions, info = compute_goal_relevance(
                 sas_task,
                 enable_merging=merging,
                 enable_causal_links=causal_links,

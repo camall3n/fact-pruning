@@ -45,26 +45,36 @@ def merge(
     actions: list[VarValAction],
     relevant_variables: list[Any],
     variable_domains: FactSet,
-) -> FactSet:
+) -> tuple[FactSet, dict]:
     """Get the relevant precondition facts after merging actions"""
+    info = {
+        "n_merge_attempts": 0,
+        "n_removed_facts": 0,
+        "n_removed_vars": 0,
+    }
     if len(actions) == 1:
-        return get_precondition_facts(actions[0], variable_domains)
+        return get_precondition_facts(actions[0], variable_domains), info
     h0 = actions[0].effect_hash(relevant_variables)
     for a in actions[1:]:
         h = a.effect_hash(relevant_variables)
         assert h == h0, "Attempted to merge skills with different effects/costs"
+    info["n_merge_attempts"] += 1
 
     # Merging only helps if at least one variable spans its whole domain
     precond_facts = FactSet()
+    is_empty_precondition = False
     for a in actions:
         precond_facts.union(get_precondition_facts(a, variable_domains))
         if not a.precondition:
-            return FactSet()
+            is_empty_precondition = True
+    if is_empty_precondition:
+        info["n_removed_facts"] += precond_facts.n_facts
+        return FactSet(), info
     complete_vars = [
         var for var, values in precond_facts if values == variable_domains[var]
     ]
     if not complete_vars:
-        return precond_facts
+        return precond_facts, info
 
     # Collect the precondition variables
     precond_vars_by_action = [set([var for var, _ in a.precondition]) for a in actions]
@@ -116,7 +126,10 @@ def merge(
     for var in all_precond_vars:
         if var not in removed_vars:
             relevant_precond_facts.union(var, precond_facts[var])
-    return relevant_precond_facts
+
+    info["n_removed_vars"] = len(removed_vars)
+    info["n_removed_facts"] = precond_facts.n_facts - relevant_precond_facts.n_facts
+    return relevant_precond_facts, info
 
 
 def merge_old(
