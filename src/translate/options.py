@@ -60,6 +60,12 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
+    argparser.add_argument(
+        "--scoping", default=None, type=str,
+        help="Whether to use task scoping to prune the grounded planning problem prior "
+        "to search. Options include: 'V' (variables), 'F' (facts), 'C' (causal links), "
+        "'M' (merging), 'R' (forward reachability), and 'L' (looped). Note that 'V' and "
+        "'F' are mutually exclusive, and 'L' requires 'R'.")
     return argparser.parse_args()
 
 
