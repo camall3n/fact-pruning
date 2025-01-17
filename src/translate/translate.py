@@ -32,6 +32,8 @@ import simplify
 import timers
 import tools
 import variable_order
+from scoping.core import scope_sas_task
+from scoping.options import ScopingOptions
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
@@ -730,6 +732,26 @@ def main(domain_filename=None, task_filename=None):
                     del action.effects[index]
 
     sas_task = pddl_to_sas(task)
+    with timers.timing("Scoping"):
+        if options.scoping is not None:
+            assert "V" in options.scoping or "F" in options.scoping
+            scoping_options = ScopingOptions(
+                enable_causal_links=("C" in options.scoping),
+                enable_merging=("M" in options.scoping),
+                enable_fact_based=("F" in options.scoping),
+                enable_forward_pass=("R" in options.scoping),
+                enable_loop=("L" in options.scoping),
+            )
+            sas_task, info = scope_sas_task(sas_task, scoping_options)
+            for key in [
+                "n_vars",
+                "n_facts",
+                "n_operators",
+                # "n_merge_attempts",
+                # "n_removed_facts",
+                # "n_removed_vars",
+            ]:
+                print(f"{key:11s}: {info[key]}")
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
