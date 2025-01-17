@@ -32,8 +32,6 @@ import simplify
 import timers
 import tools
 import variable_order
-from scoping.core import scope_sas_task
-from scoping.options import ScopingOptions
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
@@ -735,6 +733,10 @@ def main(domain_filename=None, task_filename=None):
     with timers.timing("Scoping"):
         if options.scoping is not None:
             assert "V" in options.scoping or "F" in options.scoping
+
+            from scoping.core import scope_sas_task
+            from scoping.options import ScopingOptions
+
             scoping_options = ScopingOptions(
                 enable_causal_links=("C" in options.scoping),
                 enable_merging=("M" in options.scoping),

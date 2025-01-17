@@ -40,6 +40,12 @@ add_custom_command(TARGET translate POST_BUILD
         ${CMAKE_CURRENT_SOURCE_DIR}/translate
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
     COMMENT "Copying translator module into output directory")
+add_custom_target(scoping ALL)
+add_custom_command(TARGET scoping POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/scoping
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/scoping
+    COMMENT "Copying scoping module into output directory")
 
 # Add search component as a subproject.
 add_subdirectory(search)
