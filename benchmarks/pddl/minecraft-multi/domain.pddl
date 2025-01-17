@@ -1,10 +1,6 @@
 (define (domain minecraft-multi)
     (:requirements :strips)
 
-    (:functions
-        (total-cost) - number
-    )
-
     (:predicates
         (tribe-has-food)
         (hungry ?ag)
@@ -21,6 +17,10 @@
         (has-fork ?ag)
         (has-bed ?ag)
         (feast-is-ready)
+    )
+
+    (:functions
+        (total-cost) - number
     )
 
     ; ---------- resources ----------
