@@ -1,0 +1,68 @@
+(define (problem minecraft-multi-object-08-08)
+
+    (:domain minecraft-multi-object)
+
+    (:objects
+        ag01 ag02 ag03 ag04 ag05 ag06 ag07 ag08 - agent
+        n00 n01 n02 n03 n04 n05 n06 n07 n08 - int
+    )
+
+    (:init
+        ; ----- inventory -----
+        (hungry ag01)
+        (hungry ag02)
+        (hungry ag03)
+        (hungry ag04)
+        (hungry ag05)
+        (hungry ag06)
+        (hungry ag07)
+        (hungry ag08)
+        (has-logs ag01 n00)
+        (has-logs ag02 n00)
+        (has-logs ag03 n00)
+        (has-logs ag04 n00)
+        (has-logs ag05 n00)
+        (has-logs ag06 n00)
+        (has-logs ag07 n00)
+        (has-logs ag08 n00)
+        (has-sticks ag01 n00)
+        (has-sticks ag02 n00)
+        (has-sticks ag03 n00)
+        (has-sticks ag04 n00)
+        (has-sticks ag05 n00)
+        (has-sticks ag06 n00)
+        (has-sticks ag07 n00)
+        (has-sticks ag08 n00)
+        (has-iron ag01 n00)
+        (has-iron ag02 n00)
+        (has-iron ag03 n00)
+        (has-iron ag04 n00)
+        (has-iron ag05 n00)
+        (has-iron ag06 n00)
+        (has-iron ag07 n00)
+        (has-iron ag08 n00)
+        (has-wool ag01 n00)
+        (has-wool ag02 n00)
+        (has-wool ag03 n00)
+        (has-wool ag04 n00)
+        (has-wool ag05 n00)
+        (has-wool ag06 n00)
+        (has-wool ag07 n00)
+        (has-wool ag08 n00)
+        ; ----- misc -----
+        (are-seq n00 n01)
+        (are-seq n01 n02)
+        (are-seq n02 n03)
+        (are-seq n03 n04)
+        (are-seq n04 n05)
+        (are-seq n05 n06)
+        (are-seq n06 n07)
+        (are-seq n07 n08)
+        (= (total-cost) 0)
+    )
+
+(:goal (and (tribe-has-food)))
+
+(:metric minimize (total-cost))
+
+)
