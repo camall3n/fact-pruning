@@ -730,7 +730,7 @@ def main(domain_filename=None, task_filename=None):
                     del action.effects[index]
 
     sas_task = pddl_to_sas(task)
-    with timers.timing("Scoping"):
+    with timers.timing("Scoping", block=True):
         if options.scoping is not None:
             assert "V" in options.scoping or "F" in options.scoping
 
@@ -746,14 +746,13 @@ def main(domain_filename=None, task_filename=None):
             )
             sas_task, info = scope_sas_task(sas_task, scoping_options)
             for key in [
-                "n_vars",
-                "n_facts",
-                "n_operators",
-                # "n_merge_attempts",
-                # "n_removed_facts",
-                # "n_removed_vars",
+                "Scoping Vars",
+                "Scoping Facts",
+                "Scoping Operators",
+                "Scoping Merge Attempts",
             ]:
                 print(f"{key:11s}: {info[key]}")
+    print("Dumping statistics...")
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):

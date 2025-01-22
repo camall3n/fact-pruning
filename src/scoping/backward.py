@@ -89,7 +89,7 @@ def get_goal_relevant_facts(
             aggregated_info[key] += val
         relevant_facts.union(relevant_precond_facts)
 
-    return relevant_facts, info
+    return relevant_facts, aggregated_info
 
 
 def goal_relevance_step(

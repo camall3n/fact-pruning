@@ -1,7 +1,6 @@
 #!%cd ~/dev/downward/src/translate
 #
 import argparse
-from collections import defaultdict
 import os
 
 import sas_tasks as fd
@@ -113,42 +112,50 @@ def prune_task(
     )
 
 
-def scope(
-    scoping_task: ScopingTask,
-    options: ScopingOptions,
-):
-    aggregated_info = defaultdict(int)
-    while True:
-        scoped_task, info = scope_backward(
-            scoping_task,
-            enable_merging=options.enable_merging,
-            enable_causal_links=options.enable_causal_links,
-            enable_fact_based=options.enable_fact_based,
-        )
-        for key, val in info.items():
-            aggregated_info[key] += val
-        if options.enable_forward_pass:
-            scoped_task, goal_reachable = scope_forward(scoped_task)
-            if not goal_reachable:
-                # TODO: do something smart
-                pass
-        if (
-            options.enable_loop
-            and options.enable_forward_pass
-            and (scoped_task != scoping_task)
-        ):
-            scoping_task = scoped_task
-        else:
-            break
-    return scoped_task
+# def scope(
+#     scoping_task: ScopingTask,
+#     options: ScopingOptions,
+# ):
+#     aggregated_info = defaultdict(int)
+#     while True:
+#         scoped_task, info = scope_backward(
+#             scoping_task,
+#             enable_merging=options.enable_merging,
+#             enable_causal_links=options.enable_causal_links,
+#             enable_fact_based=options.enable_fact_based,
+#         )
+#         for key, val in info.items():
+#             aggregated_info[key] += val
+#         if options.enable_forward_pass:
+#             scoped_task, goal_reachable = scope_forward(scoped_task)
+#             if not goal_reachable:
+#                 # TODO: do something smart
+#                 pass
+#         if (
+#             options.enable_loop
+#             and options.enable_forward_pass
+#             and (scoped_task != scoping_task)
+#         ):
+#             scoping_task = scoped_task
+#         else:
+#             break
+#     return scoped_task
 
 
 def scope_sas_task(
     sas_task: fd.SASTask,
     scoping_options: ScopingOptions,
 ) -> tuple[fd.SASTask, dict]:
-    aggregated_info = defaultdict(int)
-    while True:
+    aggregated_info = {
+        "Scoping Merge Attempts": 0,
+        "Scoping Vars": f"{len(sas_task.variables.ranges)}",
+        "Scoping Facts": f"{sum(sas_task.variables.ranges)}",
+        "Scoping Operators": f"{len(sas_task.operators)}",
+    }
+    info = {}
+    should_continue = True
+    while should_continue:
+        should_continue = False
         scoping_task = ScopingTask.from_sas(sas_task)
         scoped_task, info = scope_backward(
             scoping_task,
@@ -180,11 +187,13 @@ def scope_sas_task(
                 )
                 if something_was_removed:
                     sas_task = scoped_sas
-                    continue
-        break
+                    should_continue = True
+        aggregated_info["Scoping Vars"] += f" -> {len(scoped_sas.variables.ranges)}"
+        aggregated_info["Scoping Facts"] += f" -> {sum(scoped_sas.variables.ranges)}"
+        aggregated_info["Scoping Operators"] += f" -> {len(scoped_sas.operators)}"
 
     scoped_sas._sort_all()
-    return scoped_sas, info
+    return scoped_sas, aggregated_info
 
 
 def scope_sas_file(
@@ -197,14 +206,6 @@ def scope_sas_file(
     scoped_sas, info = scope_sas_task(sas_task, scoping_options)
     for key, val in sorted(info.items()):
         print(f"{key}: {val}")
-    # translate.dump_statistics(scoped_sas)
-    info["n_operators"] = f"{len(sas_task.operators)} -> {len(scoped_sas.operators)}"
-    info["n_vars"] = (
-        f"{len(sas_task.variables.ranges)} -> {len(scoped_sas.variables.ranges)}"
-    )
-    info["n_facts"] = (
-        f"{sum(sas_task.variables.ranges)} -> {sum(scoped_sas.variables.ranges)}"
-    )
 
     if scoping_options.write_output_file:
         filepath, ext = os.path.splitext(sas_path)
