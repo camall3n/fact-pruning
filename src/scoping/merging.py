@@ -48,7 +48,7 @@ def merge(
 ) -> tuple[FactSet, dict]:
     """Get the relevant precondition facts after merging actions"""
     info = {
-        "Scoping Merge Attempts": 0,
+        "Scoping merge attempts": 0,
     }
     if len(actions) == 1:
         return get_precondition_facts(actions[0], variable_domains), info
@@ -56,7 +56,7 @@ def merge(
     for a in actions[1:]:
         h = a.effect_hash(relevant_variables)
         assert h == h0, "Attempted to merge skills with different effects/costs"
-    info["Scoping Merge Attempts"] += 1
+    info["Scoping merge attempts"] += 1
 
     # Merging only helps if at least one variable spans its whole domain
     precond_facts = FactSet()
@@ -67,7 +67,7 @@ def merge(
             is_empty_precondition = True
     if is_empty_precondition:
         if all([len(action.precondition) == 0 for action in actions]):
-            info["Scoping Merge Attempts"] = 0
+            info["Scoping merge attempts"] = 0
         return FactSet(), info
     complete_vars = [
         var for var, values in precond_facts if values == variable_domains[var]

@@ -147,10 +147,10 @@ def scope_sas_task(
     scoping_options: ScopingOptions,
 ) -> tuple[fd.SASTask, dict]:
     aggregated_info = {
-        "Scoping Merge Attempts": 0,
-        "Scoping Vars": f"{len(sas_task.variables.ranges)}",
-        "Scoping Facts": f"{sum(sas_task.variables.ranges)}",
-        "Scoping Operators": f"{len(sas_task.operators)}",
+        "Scoping merge attempts": 0,
+        "Scoping vars": f"{len(sas_task.variables.ranges)}",
+        "Scoping facts": f"{sum(sas_task.variables.ranges)}",
+        "Scoping operators": f"{len(sas_task.operators)}",
     }
     info = {}
     should_continue = True
@@ -168,7 +168,7 @@ def scope_sas_task(
         scoped_sas = scoped_task.to_sas()
         if scoping_options.enable_forward_pass:
             try:
-                simplify.filter_unreachable_propositions(scoped_sas)
+                simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
             except simplify.TriviallySolvable:
@@ -188,9 +188,9 @@ def scope_sas_task(
                 if something_was_removed:
                     sas_task = scoped_sas
                     should_continue = True
-        aggregated_info["Scoping Vars"] += f" -> {len(scoped_sas.variables.ranges)}"
-        aggregated_info["Scoping Facts"] += f" -> {sum(scoped_sas.variables.ranges)}"
-        aggregated_info["Scoping Operators"] += f" -> {len(scoped_sas.operators)}"
+        aggregated_info["Scoping vars"] += f" -> {len(scoped_sas.variables.ranges)}"
+        aggregated_info["Scoping facts"] += f" -> {sum(scoped_sas.variables.ranges)}"
+        aggregated_info["Scoping operators"] += f" -> {len(scoped_sas.operators)}"
 
     scoped_sas._sort_all()
     return scoped_sas, aggregated_info

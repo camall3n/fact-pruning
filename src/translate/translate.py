@@ -746,10 +746,10 @@ def main(domain_filename=None, task_filename=None):
             )
             sas_task, info = scope_sas_task(sas_task, scoping_options)
             for key in [
-                "Scoping Vars",
-                "Scoping Facts",
-                "Scoping Operators",
-                "Scoping Merge Attempts",
+                "Scoping vars",
+                "Scoping facts",
+                "Scoping operators",
+                "Scoping merge attempts",
             ]:
                 print(f"{key:11s}: {info[key]}")
     print("Dumping statistics...")

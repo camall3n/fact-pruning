@@ -223,15 +223,15 @@ class VarValueRenaming:
             self.new_sizes.append(new_size)
             self.new_var_count += 1
 
-    def apply_to_task(self, task):
+    def apply_to_task(self, task, quiet: bool = False):
         if DEBUG:
             self.dump()
         self.apply_to_variables(task.variables)
         self.apply_to_mutexes(task.mutexes)
         self.apply_to_init(task.init)
         self.apply_to_goals(task.goal.pairs)
-        self.apply_to_operators(task.operators)
-        self.apply_to_axioms(task.axioms)
+        self.apply_to_operators(task.operators, quiet=quiet)
+        self.apply_to_axioms(task.axioms, quiet=quiet)
 
     def apply_to_variables(self, variables):
         variables.ranges = self.new_sizes
@@ -295,7 +295,7 @@ class VarValueRenaming:
             # trivially solvable task.
             raise TriviallySolvable
 
-    def apply_to_operators(self, operators):
+    def apply_to_operators(self, operators, quiet: bool = False):
         new_operators = []
         num_removed = 0
         for op in operators:
@@ -306,10 +306,11 @@ class VarValueRenaming:
                     print("Removed operator: %s" % op.name)
             else:
                 new_operators.append(new_op)
-        print("%d operators removed" % num_removed)
+        if not quiet:
+            print("%d operators removed" % num_removed)
         operators[:] = new_operators
 
-    def apply_to_axioms(self, axioms):
+    def apply_to_axioms(self, axioms, quiet: bool = False):
         new_axioms = []
         num_removed = 0
         for axiom in axioms:
@@ -322,7 +323,8 @@ class VarValueRenaming:
                     axiom.dump()
             else:
                 new_axioms.append(axiom)
-        print("%d axioms removed" % num_removed)
+        if not quiet:
+            print("%d axioms removed" % num_removed)
         axioms[:] = new_axioms
 
     def translate_operator(self, op):
@@ -483,7 +485,7 @@ def build_renaming(dtgs):
     return renaming
 
 
-def filter_unreachable_propositions(sas_task):
+def filter_unreachable_propositions(sas_task, quiet: bool = False):
     """We remove unreachable propositions and then prune variables
     with only one value.
 
@@ -514,7 +516,8 @@ def filter_unreachable_propositions(sas_task):
     # apply_to_task may raise Impossible if the goal is detected as
     # unreachable or TriviallySolvable if it has no goal. We let the
     # exceptions propagate to the caller.
-    renaming.apply_to_task(sas_task)
-    print("%d propositions removed" % renaming.num_removed_values)
+    renaming.apply_to_task(sas_task, quiet=quiet)
+    if not quiet:
+        print("%d propositions removed" % renaming.num_removed_values)
     if DEBUG:
         sas_task.validate()
