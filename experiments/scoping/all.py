@@ -49,8 +49,8 @@ SUITE = common_setup.DEFAULT_OPTIMAL_SUITE
 time_limit = "30m"
 memory_limit="3584M"
 
-SUITE = ["gripper"]
-time_limit = "1m"
+# SUITE = ["gripper"]
+# time_limit = "1m"
 
 ENVIRONMENT = LocalEnvironment(processes=48)
 
