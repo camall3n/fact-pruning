@@ -81,8 +81,22 @@ exp.add_step('start', exp.start_runs)
 exp.add_step("parse", exp.parse)
 
 exp.add_fetcher(name='fetch')
+attributes = [
+  "translator_axioms",
+  "translator_derived_variables",
+  "translator_facts",
+  "translator_goal_facts",
+  "translator_mutex_groups",
+  "translator_operators",
+  "translator_peak_memory",
+  "translator_task_size",
+  "translator_time_done",
+  "translator_time_writing_output",
+  "translator_total_mutex_groups_size",
+  "translator_variables"
+]
 
-attributes = IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["num_merge_attempts"]
+attributes += IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["num_merge_attempts"]
 # exp.add_comparison_table_step(attributes=attributes)
 exp.add_absolute_report_step(attributes=attributes)
 
