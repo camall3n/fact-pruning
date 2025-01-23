@@ -6,6 +6,8 @@ import sys
 import traceback
 from typing import Dict, List, Optional, Tuple, Union
 
+from scoping.sas_parser import SasParser
+
 VarValPair = Tuple[int, int]
 
 def python_version_supported():
@@ -716,20 +718,26 @@ def dump_statistics(sas_task):
 
 def main(domain_filename=None, task_filename=None):
     timer = timers.Timer()
-    with timers.timing("Parsing", True):
-        task = pddl_parser.open(domain_filename, task_filename)
+    if options.domain.endswith(".sas"):
+        # Read the sas task
+        parser = SasParser(pth=options.domain)
+        parser.parse()
+        sas_task = parser.to_fd()
+    else:
+        with timers.timing("Parsing", True):
+            task = pddl_parser.open(domain_filename, task_filename)
 
-    with timers.timing("Normalizing task"):
-        normalize.normalize(task)
+        with timers.timing("Normalizing task"):
+            normalize.normalize(task)
 
-    if options.generate_relaxed_task:
-        # Remove delete effects.
-        for action in task.actions:
-            for index, effect in reversed(list(enumerate(action.effects))):
-                if effect.literal.negated:
-                    del action.effects[index]
+        if options.generate_relaxed_task:
+            # Remove delete effects.
+            for action in task.actions:
+                for index, effect in reversed(list(enumerate(action.effects))):
+                    if effect.literal.negated:
+                        del action.effects[index]
 
-    sas_task = pddl_to_sas(task)
+        sas_task = pddl_to_sas(task)
     with timers.timing("Scoping", block=True):
         if options.scoping is not None:
             assert "V" in options.scoping or "F" in options.scoping

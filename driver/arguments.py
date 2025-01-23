@@ -249,8 +249,11 @@ def _set_components_and_inputs(parser, args):
             args.translate_inputs = []
         elif num_files == 1:
             task_file, = args.filenames
-            domain_file = util.find_domain_filename(task_file)
-            args.translate_inputs = [domain_file, task_file]
+            if task_file.endswith(".sas"):
+               args.translate_inputs = args.filenames
+            else: 
+                domain_file = util.find_domain_filename(task_file)
+                args.translate_inputs = [domain_file, task_file]
         elif num_files == 2:
             args.translate_inputs = args.filenames
         else:
