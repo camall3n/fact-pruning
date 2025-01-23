@@ -35,7 +35,7 @@ def generate_problem(n_ag, n_int):
         ]
     state += [tab(2) + "; ----- misc -----"]
     state += [
-        "\n".join([tab(2) + f"(are-seq n{i:02d} n{i+1:02d})" for i in range(n_int)])
+        "\n".join([tab(2) + f"(are-seq n{i:02d} n{i + 1:02d})" for i in range(n_int)])
     ]
     state += [tab(2) + "(= (total-cost) 0)"]
     state += [tab(1) + ")"]
@@ -68,7 +68,7 @@ for n_ag in agent_counts:
     for n_int in int_maxima:
         prob_file = os.path.join(pddl_dir, f"prob-{n_ag:02d}-{n_int:02d}.pddl")
         sas_file = os.path.join(
-            sas_dir, f"minecraft-multi-object-{n_ag:02d}-{n_int:02d}.sas"
+            sas_dir, f"minecraft-multi-object-prob-{n_ag:02d}-{n_int:02d}.sas"
         )
         sys.argv = [
             "translate.py",

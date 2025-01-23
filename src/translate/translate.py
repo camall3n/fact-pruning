@@ -738,8 +738,8 @@ def main(domain_filename=None, task_filename=None):
                         del action.effects[index]
 
         sas_task = pddl_to_sas(task)
-    with timers.timing("Scoping", block=True):
-        if options.scoping is not None:
+    if options.scoping is not None:
+        with timers.timing("Scoping", block=True):
             assert "V" in options.scoping or "F" in options.scoping
 
             from scoping.core import scope_sas_task
