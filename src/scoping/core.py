@@ -142,6 +142,13 @@ def prune_task(
 #     return scoped_task
 
 
+def track_scoping_progress(info: dict, sas_task: fd.SASTask):
+    info["Scoping vars"] += f" -> {len(sas_task.variables.ranges)}"
+    info["Scoping facts"] += f" -> {sum(sas_task.variables.ranges)}"
+    info["Scoping operators"] += f" -> {len(sas_task.operators)}"
+    return info
+
+
 def scope_sas_task(
     sas_task: fd.SASTask,
     scoping_options: ScopingOptions,
@@ -170,9 +177,9 @@ def scope_sas_task(
             try:
                 simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
             except simplify.Impossible:
-                return unsolvable_sas_task("Simplified to trivially false goal")
+                scoped_sas = unsolvable_sas_task("Simplified to trivially false goal")
             except simplify.TriviallySolvable:
-                return solvable_sas_task("Simplified to empty goal")
+                scoped_sas = solvable_sas_task("Simplified to empty goal")
 
             if scoping_options.enable_loop:
                 n_vars_removed = len(sas_task.variables.ranges) - len(
@@ -185,7 +192,10 @@ def scope_sas_task(
                 something_was_removed = (
                     n_vars_removed + n_facts_removed + n_actions_removed
                 )
-                if something_was_removed:
+                if something_was_removed and scoped_sas not in [
+                    unsolvable_sas_task(),
+                    solvable_sas_task(),
+                ]:
                     sas_task = scoped_sas
                     should_continue = True
         aggregated_info["Scoping vars"] += f" -> {len(scoped_sas.variables.ranges)}"
