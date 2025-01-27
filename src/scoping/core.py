@@ -13,7 +13,7 @@ from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
 from translate import timers
 from translate import simplify
-from translate import unsolvable_sas_task, solvable_sas_task
+from translate import unsolvable_sas_task, solvable_sas_task, trivial_task
 
 
 def scope_backward(
@@ -193,8 +193,8 @@ def scope_sas_task(
                     n_vars_removed + n_facts_removed + n_actions_removed
                 )
                 if something_was_removed and scoped_sas not in [
-                    unsolvable_sas_task(),
-                    solvable_sas_task(),
+                    trivial_task(solvable=True),
+                    trivial_task(solvable=False),
                 ]:
                     sas_task = scoped_sas
                     should_continue = True
