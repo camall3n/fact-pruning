@@ -81,6 +81,7 @@ exp.add_step('start', exp.start_runs)
 exp.add_step("parse", exp.parse)
 
 exp.add_fetcher(name='fetch')
+exp.add_fetcher("data/scoping-base-ipc-eval")
 attributes = [
   "translator_axioms",
   "translator_derived_variables",
