@@ -97,9 +97,21 @@ attributes = [
   "translator_variables"
 ]
 
+def rename_algorithms(run):
+    name = run["algorithm"]
+    paper_names = {f"{REVISIONS[0]}-basic": "No scoping", 
+                   f"{REVISIONS[0]}-fd": "FD"}
+    
+    for a in ["V", "F", "CF", "MCF", "RMCF", "LRMCF"]:
+        paper_names[f"{REVISIONS[0]}-{a}"] = a
+    run["algorithm"] = paper_names[name]
+    return run
+
+algos = ["No scoping", "FD", "V", "F", "CF", "MCF", "RMCF", "LRMCF"]
+
 attributes += IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["num_merge_attempts"]
 # exp.add_comparison_table_step(attributes=attributes)
-exp.add_absolute_report_step(attributes=attributes)
+exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algos)
 
 exp.run_steps()
 
