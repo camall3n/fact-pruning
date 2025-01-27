@@ -1,4 +1,4 @@
-(define (problem minecraft-multi-20)
+(define (problem minecraft-multi-01)
 
     (:domain minecraft-multi)
 
