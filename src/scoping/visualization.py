@@ -60,7 +60,7 @@ def compute_backward_scoping_layer(
     stopped_early = False
     while relevant_facts != prev_facts or len(relevant_actions) != len(prev_actions):
         prev_facts, prev_actions = relevant_facts, relevant_actions
-        relevant_facts, relevant_actions = goal_relevance_step(
+        relevant_facts, relevant_actions, _ = goal_relevance_step(
             task.domains,
             relevant_facts,
             task.init,
@@ -192,14 +192,18 @@ def find_successors(
         source_fn, dest_fn = effect, precondition
     action_parents = []
     for fact in source_fn(action):
-        if fact in fact_filter or variables and fact[0] in fact_filter.variables:
+        if fact in fact_filter:
             # fact just became relevant
             # find first matching node in prev_layer
             # TODO: technically this might be wrong for merging
             for node in prev_layer:
-                if fact in dest_fn(node) and node not in action_parents:
+                fact_match = fact in dest_fn(node)
+                var_match = fact[0] in [var for var, val in dest_fn(node)]
+                if (
+                    fact_match or (variables and var_match)
+                ) and node not in action_parents:
                     action_parents.append(node)
-                    break
+                    # break
     return action_parents
 
 
