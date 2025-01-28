@@ -67,7 +67,9 @@ class CausalGraph {
     IntRelation predecessors;
 
     void dump(const TaskProxy &task_proxy) const;
+    std::string cleanup_name(const std::string s) const;
     void dump_dot_graph(const TaskProxy &task_proxy) const;
+
 public:
     /* Use the factory function get_causal_graph to create causal graphs
        to avoid creating more than one causal graph per AbstractTask. */

@@ -207,6 +207,22 @@ void CausalGraph::dump(const TaskProxy &task_proxy) const {
 }
 
 
+std::string CausalGraph::cleanup_name(const std::string s) const {
+    std::string result = s;
+    // replace any occurrences of the word "Atom " at the beginning of a string with ""
+    if (result.find("Atom ") == 0)
+        result = result.substr(5);
+    // remove any occurrences of parentheticals (and their contents); e.g. "foo(ag1? ag2?)" -> "foo"
+    // you can assume that there is only one such occurrence per string and that it is at the end
+    size_t pos = result.find('(');
+    if (pos != std::string::npos)
+        result = result.substr(0, pos);
+    // replace "-" with "_"
+    std::replace(result.begin(), result.end(), '-', '_');
+    return result;
+}
+
+
 void CausalGraph::dump_dot_graph(const TaskProxy &task_proxy) const {
     std::ofstream os("causal_graph.dot", std::ofstream::out);
 
@@ -219,9 +235,12 @@ void CausalGraph::dump_dot_graph(const TaskProxy &task_proxy) const {
     for (VariableProxy var : task_proxy.get_variables()) {
         for (auto to : successors[var.get_id()]) {
             VariableProxy to_var = task_proxy.get_variables()[to];
-            os << "    " << var.get_fact(0).get_name() << " -> " << to_var.get_fact(0).get_name() << ";" << endl;
+            std::string from_name = cleanup_name(var.get_fact(0).get_name());
+            std::string to_name = cleanup_name(to_var.get_fact(0).get_name());
+
+            os << "    " << from_name << " -> " << to_name << ";" << endl;
         }
-    }    
+    }
     os << "}" << endl;
     os.close();
 }
