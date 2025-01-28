@@ -1,6 +1,7 @@
 #!%cd ~/dev/downward/src/translate
 #
 import argparse
+from collections import defaultdict
 import os
 
 import sas_tasks as fd
@@ -112,34 +113,34 @@ def prune_task(
     )
 
 
-# def scope(
-#     scoping_task: ScopingTask,
-#     options: ScopingOptions,
-# ):
-#     aggregated_info = defaultdict(int)
-#     while True:
-#         scoped_task, info = scope_backward(
-#             scoping_task,
-#             enable_merging=options.enable_merging,
-#             enable_causal_links=options.enable_causal_links,
-#             enable_fact_based=options.enable_fact_based,
-#         )
-#         for key, val in info.items():
-#             aggregated_info[key] += val
-#         if options.enable_forward_pass:
-#             scoped_task, goal_reachable = scope_forward(scoped_task)
-#             if not goal_reachable:
-#                 # TODO: do something smart
-#                 pass
-#         if (
-#             options.enable_loop
-#             and options.enable_forward_pass
-#             and (scoped_task != scoping_task)
-#         ):
-#             scoping_task = scoped_task
-#         else:
-#             break
-#     return scoped_task
+def scope(
+    scoping_task: ScopingTask,
+    options: ScopingOptions,
+):
+    aggregated_info = defaultdict(int)
+    while True:
+        scoped_task, info = scope_backward(
+            scoping_task,
+            enable_merging=options.enable_merging,
+            enable_causal_links=options.enable_causal_links,
+            enable_fact_based=options.enable_fact_based,
+        )
+        for key, val in info.items():
+            aggregated_info[key] += val
+        if options.enable_forward_pass:
+            scoped_task, goal_reachable = scope_forward(scoped_task)
+            if not goal_reachable:
+                # TODO: do something smart
+                pass
+        if (
+            options.enable_loop
+            and options.enable_forward_pass
+            and (scoped_task != scoping_task)
+        ):
+            scoping_task = scoped_task
+        else:
+            break
+    return scoped_task
 
 
 def track_scoping_progress(info: dict, sas_task: fd.SASTask):
