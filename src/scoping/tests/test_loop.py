@@ -6,6 +6,9 @@ from scoping.core import scope
 from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
+from scoping.visualization import TaskGraph
+
+# %%
 
 
 def make_task(
@@ -158,3 +161,8 @@ test_forward_cl_merge_values()  # def
 test_loop()  # f
 
 print("All tests passed.")
+
+
+# %%
+scoping_task = make_task()
+TaskGraph(scoping_task, ScopingOptions(0, 0, 1, 0, 0))
