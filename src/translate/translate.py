@@ -723,6 +723,14 @@ def main(domain_filename=None, task_filename=None):
         parser = SasParser(pth=options.domain)
         parser.parse()
         sas_task = parser.to_fd()
+
+        # Run causal graph filtering?
+        if options.reorder_variables or options.filter_unimportant_vars:
+            with timers.timing("Reordering and filtering variables", block=True):
+                variable_order.find_and_apply_variable_order(
+                    sas_task, options.reorder_variables,
+                    options.filter_unimportant_vars)
+            sas_task._sort_all()
     else:
         with timers.timing("Parsing", True):
             task = pddl_parser.open(domain_filename, task_filename)
