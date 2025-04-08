@@ -54,7 +54,7 @@ def select_actions_matching_var(
 def select_actions_matching_precond(
     actions: list[VarValAction], precond: list[VarValPair], free_var: Any
 ) -> list[VarValAction]:
-    """Select actions that have a specific precondition"""
+    """Select actions that have a specific precondition, not accounting for free_var"""
     selected_actions = []
     for action in actions:
         precond_without_var = sorted(
