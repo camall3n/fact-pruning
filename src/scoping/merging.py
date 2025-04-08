@@ -102,10 +102,10 @@ def merge(
     relevant_precond_facts = FactSet()
     visited_action_names = set()
     for var_to_remove in spanning_vars:
-        # consider all actions that have this variable in their precondition
+        # find all actions that have this variable in their precondition
         # and look for ways to simplify the preconditions
-        considered_actions = select_actions_matching_var(actions, var_to_remove)
-        if not considered_actions:
+        matching_actions = select_actions_matching_var(actions, var_to_remove)
+        if not matching_actions:
             # no actions have this variable in their precondition, so the
             # variable can be deleted, and there are no relevant facts to add
             continue
@@ -113,20 +113,20 @@ def merge(
         # compute the unique preconditions for the actions, excluding this variable
         preconds_without_var = [
             [(var, val) for var, val in action.precondition if var != var_to_remove]
-            for action in considered_actions
+            for action in matching_actions
         ]
         unique_preconds_without_var = set(
             [tuple(sorted(precond)) for precond in preconds_without_var]
         )
         for precond_without_var in unique_preconds_without_var:
             # get all actions that match this partial precondition
-            filtered_actions = select_actions_matching_precond(
+            considered_actions = select_actions_matching_precond(
                 actions, precond_without_var, var_to_remove
             )
 
-            # get list of values of var_to_remove required for the filtered_actions
+            # get list of values of var_to_remove required for the considered_actions
             var_to_remove_values = [
-                FactSet(a.precondition)[var_to_remove] for a in filtered_actions
+                FactSet(a.precondition)[var_to_remove] for a in considered_actions
             ]
             var_to_remove_values = set().union(
                 *[
@@ -145,8 +145,8 @@ def merge(
             # either way, we need to store the precondition facts without the variable
             relevant_precond_facts.add(precond_without_var)
 
-            # mark the filtered_actions as visited
-            for a in filtered_actions:
+            # mark the considered_actions as visited
+            for a in considered_actions:
                 visited_action_names.add(a.name)
 
     # We should have marked actions as visited already so there shouldn't be too
