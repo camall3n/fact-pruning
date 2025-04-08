@@ -42,6 +42,52 @@ def simplify_tautologies(
     return partial_states
 
 
+# def is_more_general(precond_a, precond_b):
+#     """Check if precond_a is more general than precond_b.
+#     A precondition is more general if it's a proper subset of another precondition."""
+#     precond_a_set = set(precond_a)
+#     precond_b_set = set(precond_b)
+#     return precond_a_set.issubset(precond_b_set) and precond_a_set != precond_b_set
+
+
+# def topological_sort_preconditions(preconditions):
+#     """Sort preconditions topologically so that more general preconditions come first.
+
+#     For example, a precondition with (a=1) should come before one with (a=1, b=3)
+#     because the first is more general than the second.
+#     """
+#     # Build a directed graph
+#     graph = defaultdict(list)
+#     in_degree = {precond: 0 for precond in preconditions}
+
+#     # Create edges from more general to more specific preconditions
+#     for precond_a in preconditions:
+#         for precond_b in preconditions:
+#             if is_more_general(precond_a, precond_b):
+#                 graph[precond_a].append(precond_b)
+#                 in_degree[precond_b] += 1
+
+#     # Perform topological sort
+#     sorted_preconditions = []
+#     queue = [precond for precond, degree in in_degree.items() if degree == 0]
+
+#     while queue:
+#         current = queue.pop(0)
+#         sorted_preconditions.append(current)
+
+#         for neighbor in graph[current]:
+#             in_degree[neighbor] -= 1
+#             if in_degree[neighbor] == 0:
+#                 queue.append(neighbor)
+
+#     # If not all nodes are visited, there's a cycle (which shouldn't happen with preconditions)
+#     if len(sorted_preconditions) != len(preconditions):
+#         # Fall back to sorting by length as a simpler approximation
+#         return sorted(preconditions, key=len)
+
+#     return sorted_preconditions
+
+
 def select_actions_matching_var(
     actions: list[VarValAction], var: Any
 ) -> list[VarValAction]:
@@ -67,7 +113,7 @@ def select_actions_matching_precond(
     return selected_actions
 
 
-def merge(
+def merge3(
     actions: list[VarValAction],
     relevant_variables: list[Any],
     variable_domains: FactSet,
@@ -158,8 +204,157 @@ def merge(
     for action in actions:
         if action.name not in visited_action_names:
             relevant_precond_facts.add(action.precondition)
+    return relevant_precond_facts, info
+
+
+def merge(
+    actions: list[VarValAction],
+    relevant_variables: list[Any],
+    variable_domains: FactSet,
+) -> tuple[FactSet, dict]:
+    return merge3(actions, relevant_variables, variable_domains)
+
+
+def merge2(
+    actions: list[VarValAction],
+    relevant_variables: list[Any],
+    variable_domains: FactSet,
+) -> tuple[FactSet, dict]:
+    """Get the relevant precondition facts after merging actions"""
+    info = {
+        "Scoping merge attempts": 0,
+    }
+    if len(actions) == 1:
+        return get_precondition_facts(actions[0], variable_domains), info
+    h0 = actions[0].effect_hash(relevant_variables)
+    for a in actions[1:]:
+        h = a.effect_hash(relevant_variables)
+        assert h == h0, "Attempted to merge skills with different effects/costs"
+    info["Scoping merge attempts"] += 1
+
+    # Merging only helps if at least one variable spans its whole domain
+    precond_facts = FactSet()
+    is_empty_precondition = False
+    for a in actions:
+        precond_facts.union(get_precondition_facts(a, variable_domains))
+        if not a.precondition:
+            is_empty_precondition = True
+    if is_empty_precondition:
+        if all([len(action.precondition) == 0 for action in actions]):
+            info["Scoping merge attempts"] = 0
+        return FactSet(), info
+    complete_vars = [
+        var for var, values in precond_facts if values == variable_domains[var]
+    ]
+    if not complete_vars:
+        return precond_facts, info
+
+    # Collect the precondition variables
+    precond_vars_by_action = [
+        sorted(set([var for var, _ in a.precondition])) for a in actions
+    ]
+    all_precond_vars = sorted(set().union(*precond_vars_by_action))
+
+    reduced_var_domains = FactSet(variable_domains)
+    removed_vars = []
+
+    # See whether we can remove any of the complete variables
+    for var_to_remove in complete_vars:
+        safe_to_remove = True
+        # scan over all possible assignments to the remaining variables
+        remaining_vars = [var for var in all_precond_vars if var != var_to_remove]
+        remaining_var_domains = [reduced_var_domains[var] for var in remaining_vars]
+        remaining_var_partial_states = itertools.product(*remaining_var_domains)
+        for i, partial_state in enumerate(remaining_var_partial_states):
+            # prepare to reconstruct the full state for each value of var_to_remove
+            partial_state = list(partial_state)
+            var_to_remove_index = all_precond_vars.index(var_to_remove)
+            partial_state.insert(var_to_remove_index, None)
+            always_has_action = True
+            never_has_action = True
+            for val in reduced_var_domains[var_to_remove]:
+                partial_state[var_to_remove_index] = val
+                full_state = list(zip(all_precond_vars, partial_state))
+                has_action = any(action.can_run(full_state) for action in actions)
+                if has_action:
+                    never_has_action = False
+                else:
+                    always_has_action = False
+                if not (always_has_action or never_has_action):
+                    break
+
+            if not (always_has_action or never_has_action):
+                # found a partial state with inconsistent action applicability so
+                # this var can't be removed. (no need to check more partial states)
+                safe_to_remove = False
+                break
+
+        if safe_to_remove:
+            # for the rest of the merge, we can set this var to a single value
+            # to speed up the remaining checks.
+            first_val = reduced_var_domains[var_to_remove].pop()
+            reduced_var_domains[var_to_remove].clear()
+            reduced_var_domains[var_to_remove].add(first_val)
+            removed_vars.append(var_to_remove)
+
+    relevant_precond_facts = FactSet()
+    for var_to_remove in all_precond_vars:
+        if var_to_remove not in removed_vars:
+            relevant_precond_facts.union(var_to_remove, precond_facts[var_to_remove])
 
     return relevant_precond_facts, info
+
+
+def merge1(
+    actions: list[VarValAction],
+    relevant_variables: list[Any],
+    variable_domains: FactSet,
+) -> FactSet:
+    """Get the relevant precondition facts after merging actions"""
+    if len(actions) == 1:
+        return get_precondition_facts(actions[0], variable_domains)
+    h0 = actions[0].effect_hash(relevant_variables)
+    for a in actions[1:]:
+        h = a.effect_hash(relevant_variables)
+        assert h == h0, "Attempted to merge skills with different effects/costs"
+
+    # Merging only helps if at least one variable spans its whole domain
+    precond_facts = FactSet()
+    for a in actions:
+        precond_facts.union(get_precondition_facts(a, variable_domains))
+        if not a.precondition:
+            return FactSet()
+    complete_vars = [
+        var for var, values in precond_facts if values == variable_domains[var]
+    ]
+    if not complete_vars:
+        return precond_facts
+
+    # Collect the precondition variables
+    precond_vars_by_action = [set([var for var, _ in a.precondition]) for a in actions]
+    all_precond_vars = set().union(*precond_vars_by_action)
+
+    # Build the set of satisfying partial states for the merged action
+    satisfying_partial_states = set()
+    for action, precond_vars in zip(actions, precond_vars_by_action):
+        dont_care_vars = all_precond_vars.difference(precond_vars)
+        dont_care_domains = [variable_domains[var] for var in dont_care_vars]
+        dont_care_val_combos = list(itertools.product(*dont_care_domains))
+        dont_care_varval_combos = [
+            list(zip(dont_care_vars, dont_care_vals))
+            for dont_care_vals in dont_care_val_combos
+        ]
+        for dont_care_varvals in dont_care_varval_combos:
+            partial_state = tuple(sorted(action.precondition + dont_care_varvals))
+            satisfying_partial_states.add(partial_state)
+
+    satisfying_partial_states = simplify_tautologies(
+        satisfying_partial_states, all_precond_vars, variable_domains
+    )
+    relevant_precond_facts = FactSet()
+    for partial_state in satisfying_partial_states:
+        relevant_precond_facts.add(partial_state)
+    return relevant_precond_facts
 
 
 def merge_pddl(actions: list[(Action | PropositionalAction)]):
