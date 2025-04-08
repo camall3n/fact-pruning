@@ -166,3 +166,7 @@ print("All tests passed.")
 # %%
 scoping_task = make_task()
 TaskGraph(scoping_task, ScopingOptions(0, 0, 1, 0, 0))
+
+# %%
+scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 0, 0, 0))
+TaskGraph(scoped_task, ScopingOptions(0, 0, 1, 0, 0))

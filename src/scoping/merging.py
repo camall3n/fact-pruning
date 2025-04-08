@@ -1,5 +1,6 @@
 import itertools
 from typing import Any
+from collections import defaultdict
 
 from normalize import convert_to_DNF
 from pddl.conditions import Condition, Disjunction, Conjunction
@@ -41,6 +42,31 @@ def simplify_tautologies(
     return partial_states
 
 
+def select_actions_matching_var(
+    actions: list[VarValAction], var: Any
+) -> list[VarValAction]:
+    """Select actions that have a specific variable in their precondition"""
+    selected_actions = []
+    for action in actions:
+        if any(a_var == var for a_var, _ in action.precondition):
+            selected_actions.append(action)
+    return selected_actions
+
+
+def select_actions_matching_precond(
+    actions: list[VarValAction], precond: list[VarValPair], free_var: Any
+) -> list[VarValAction]:
+    """Select actions that have a specific precondition"""
+    selected_actions = []
+    for action in actions:
+        precond_without_var = sorted(
+            [(var, val) for var, val in action.precondition if var != free_var]
+        )
+        if precond_without_var == sorted(precond):
+            selected_actions.append(action)
+    return selected_actions
+
+
 def merge(
     actions: list[VarValAction],
     relevant_variables: list[Any],
@@ -75,110 +101,65 @@ def merge(
     if not complete_vars:
         return precond_facts, info
 
-    # Collect the precondition variables
-    precond_vars_by_action = [set([var for var, _ in a.precondition]) for a in actions]
-    all_precond_vars = sorted(set().union(*precond_vars_by_action))
-
-    reduced_var_domains = FactSet(variable_domains)
-    removed_vars = []
-
-    # See whether we can remove any of the complete variables
-    for var_to_remove in complete_vars:
-        safe_to_remove = True
-        # scan over all possible assignments to the remaining variables
-        remaining_vars = [var for var in all_precond_vars if var != var_to_remove]
-        remaining_var_domains = [reduced_var_domains[var] for var in remaining_vars]
-        remaining_var_partial_states = itertools.product(*remaining_var_domains)
-        for partial_state in remaining_var_partial_states:
-            # prepare to reconstruct the full state for each value of var_to_remove
-            partial_state = list(partial_state)
-            var_to_remove_index = all_precond_vars.index(var_to_remove)
-            partial_state.insert(var_to_remove_index, None)
-            always_has_action = True
-            never_has_action = True
-            for val in reduced_var_domains[var_to_remove]:
-                partial_state[var_to_remove_index] = val
-                full_state = list(zip(all_precond_vars, partial_state))
-                has_action = any(action.can_run(full_state) for action in actions)
-                if has_action:
-                    never_has_action = False
-                else:
-                    always_has_action = False
-                if not (always_has_action or never_has_action):
-                    break
-
-            if not (always_has_action or never_has_action):
-                # found a partial state with inconsistent action applicability so
-                # this var can't be removed. (no need to check more partial states)
-                safe_to_remove = False
-                break
-
-        if safe_to_remove:
-            # for the rest of the merge, we can set this var to a single value
-            # to speed up the remaining checks.
-            first_val = reduced_var_domains[var_to_remove].pop()
-            reduced_var_domains[var_to_remove].clear()
-            reduced_var_domains[var_to_remove].add(first_val)
-            removed_vars.append(var_to_remove)
-
     relevant_precond_facts = FactSet()
-    for var in all_precond_vars:
-        if var not in removed_vars:
-            relevant_precond_facts.union(var, precond_facts[var])
+    visited_action_names = set()
+    for var_to_remove in complete_vars:
+        # consider all actions that have this variable in their precondition
+        # and look for ways to simplify the preconditions
+        considered_actions = select_actions_matching_var(actions, var_to_remove)
+        if not considered_actions:
+            # no actions have this variable in their precondition, so the
+            # variable can be deleted, and there are no relevant facts to add
+            continue
+
+        # compute the unique preconditions for the actions, excluding this variable
+        preconds_without_var = [
+            [(var, val) for var, val in action.precondition if var != var_to_remove]
+            for action in considered_actions
+        ]
+        unique_preconds_without_var = set(
+            [tuple(sorted(precond)) for precond in preconds_without_var]
+        )
+        for precond_without_var in unique_preconds_without_var:
+            # get all actions that match this partial precondition
+            filtered_actions = select_actions_matching_precond(
+                actions, precond_without_var, var_to_remove
+            )
+
+            # get list of values of var_to_remove required for the filtered_actions
+            var_to_remove_values = [
+                FactSet(a.precondition)[var_to_remove] for a in filtered_actions
+            ]
+            var_to_remove_values = set().union(
+                *[
+                    val_set if val_set else variable_domains[var_to_remove]
+                    for val_set in var_to_remove_values
+                ]
+            )
+
+            # check if all possible values of var_to_remove are covered by some action
+            if var_to_remove_values != variable_domains[var_to_remove]:
+                # not all possible values of the variable are covered by some action
+                # so we need to store the var_to_remove facts
+                relevant_precond_facts.add(
+                    (var_to_remove, val) for val in var_to_remove_values
+                )
+            # either way, we need to store the precondition facts without the variable
+            relevant_precond_facts.add(precond_without_var)
+
+            # mark the filtered_actions as visited
+            for a in filtered_actions:
+                visited_action_names.add(a.name)
+
+    # We should have marked actions as visited already so there shouldn't be too
+    # many left to consider. There are no variables to remove in these actions,
+    # because we've already tried to remove all possible variables. so we just mark
+    # their preconditions as relevant.
+    for action in actions:
+        if action.name not in visited_action_names:
+            relevant_precond_facts.add(action.precondition)
 
     return relevant_precond_facts, info
-
-
-def merge_old(
-    actions: list[VarValAction],
-    relevant_variables: list[Any],
-    variable_domains: FactSet,
-) -> FactSet:
-    """Get the relevant precondition facts after merging actions"""
-    if len(actions) == 1:
-        return get_precondition_facts(actions[0], variable_domains)
-    h0 = actions[0].effect_hash(relevant_variables)
-    for a in actions[1:]:
-        h = a.effect_hash(relevant_variables)
-        assert h == h0, "Attempted to merge skills with different effects/costs"
-
-    # Merging only helps if at least one variable spans its whole domain
-    precond_facts = FactSet()
-    for a in actions:
-        precond_facts.union(get_precondition_facts(a, variable_domains))
-        if not a.precondition:
-            return FactSet()
-    complete_vars = [
-        var for var, values in precond_facts if values == variable_domains[var]
-    ]
-    if not complete_vars:
-        return precond_facts
-
-    # Collect the precondition variables
-    precond_vars_by_action = [set([var for var, _ in a.precondition]) for a in actions]
-    all_precond_vars = set().union(*precond_vars_by_action)
-
-    # Build the set of satisfying partial states for the merged action
-    satisfying_partial_states = set()
-    for action, precond_vars in zip(actions, precond_vars_by_action):
-        dont_care_vars = all_precond_vars.difference(precond_vars)
-        dont_care_domains = [variable_domains[var] for var in dont_care_vars]
-        dont_care_val_combos = list(itertools.product(*dont_care_domains))
-        dont_care_varval_combos = [
-            list(zip(dont_care_vars, dont_care_vals))
-            for dont_care_vals in dont_care_val_combos
-        ]
-        for dont_care_varvals in dont_care_varval_combos:
-            partial_state = tuple(sorted(action.precondition + dont_care_varvals))
-            satisfying_partial_states.add(partial_state)
-
-    satisfying_partial_states = simplify_tautologies(
-        satisfying_partial_states, all_precond_vars, variable_domains
-    )
-    relevant_precond_facts = FactSet()
-    for partial_state in satisfying_partial_states:
-        relevant_precond_facts.add(partial_state)
-    return relevant_precond_facts
 
 
 def merge_pddl(actions: list[(Action | PropositionalAction)]):
