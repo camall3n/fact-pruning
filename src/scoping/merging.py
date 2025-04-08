@@ -1,6 +1,4 @@
-import itertools
 from typing import Any
-from collections import defaultdict
 
 from normalize import convert_to_DNF
 from pddl.conditions import Condition, Disjunction, Conjunction
@@ -95,15 +93,15 @@ def merge(
         if all([len(action.precondition) == 0 for action in actions]):
             info["Scoping merge attempts"] = 0
         return FactSet(), info
-    complete_vars = [
+    spanning_vars = [
         var for var, values in precond_facts if values == variable_domains[var]
     ]
-    if not complete_vars:
+    if not spanning_vars:
         return precond_facts, info
 
     relevant_precond_facts = FactSet()
     visited_action_names = set()
-    for var_to_remove in complete_vars:
+    for var_to_remove in spanning_vars:
         # consider all actions that have this variable in their precondition
         # and look for ways to simplify the preconditions
         considered_actions = select_actions_matching_var(actions, var_to_remove)
