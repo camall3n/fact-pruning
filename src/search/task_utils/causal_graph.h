@@ -51,6 +51,7 @@
 */
 
 #include <vector>
+#include <string>
 
 typedef std::vector<std::vector<int>> IntRelation;
 
