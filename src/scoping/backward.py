@@ -51,13 +51,17 @@ def partition_actions(
     relevant_variables: list[Any], actions: list[VarValAction]
 ) -> list[list[VarValAction]]:
     """Partition actions by (effect, cost), ignoring irrelevant variables"""
-    unique_effects_and_costs = set([a.effect_hash(relevant_variables) for a in actions])
-    effect_cost_partitions = []
-    for effect_cost in unique_effects_and_costs:
-        matching_actions = [
-            a for a in actions if a.effect_hash(relevant_variables) == effect_cost
-        ]
-        effect_cost_partitions.append(matching_actions)
+    # TODO: replace with hash map
+    unique_effects_and_costs = defaultdict(list)
+    for a in actions:
+        unique_effects_and_costs[a.effect_hash(relevant_variables)].append(a)
+    # unique_effects_and_costs = set([a.effect_hash(relevant_variables) for a in actions])
+    effect_cost_partitions = unique_effects_and_costs.values()
+    # for effect_cost in unique_effects_and_costs:
+    #     matching_actions = [
+    #         a for a in actions if a.effect_hash(relevant_variables) == effect_cost
+    #     ]
+    #     effect_cost_partitions.append(matching_actions)
     return effect_cost_partitions
 
 
