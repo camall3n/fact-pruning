@@ -28,8 +28,9 @@ CONFIG_NICKS = []
 # RMCF (+reachability)
 # LRMCF (+loop)
 
-CONFIG_NICKS.append(('basic', ["--translate-options", '--keep-unimportant-variables', "--search-options", "--search", "astar(lmcut())"]))
-for x in ["V", "F", "CF", "MCF", "RMCF", "LRMCF"]:
+#CONFIG_NICKS.append(('basic', ["--translate-options", '--keep-unimportant-variables', "--search-options", "--search", "astar(lmcut())"]))
+#for x in ["V", "F", "CF", "MCF", "RMCF", "LRMCF"]:
+for x in ["CF"]:
     CONFIG_NICKS.append((x, ["--translate-options", '--keep-unimportant-variables', "--scoping", x, "--search-options", "--search", "astar(lmcut())"]))
 
 
