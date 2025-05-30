@@ -35,10 +35,10 @@ def scope_backward(
         precond_facts.add(a.precondition)
     facts.union(precond_facts)
 
-    # Also add side-effects on vars that appear in preconds
+    # Also add side-effect facts on relevant vars
     for a in actions:
         for var, val in a.effect:
-            if var in precond_facts.variables:
+            if var in facts.variables:
                 facts.add(var, val)
     return prune_task(scoping_task, facts, actions), info
 

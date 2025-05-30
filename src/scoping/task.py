@@ -16,7 +16,8 @@ class ScopingTask:
     metric: bool = False
     value_names: dict[int, list[str]] = field(default_factory=dict)
 
-    def from_sas(sas_task: fd.SASTask) -> "ScopingTask":
+    @classmethod
+    def from_sas(cls, sas_task: fd.SASTask) -> "ScopingTask":
         domains = FactSet(
             {i: set(range(r)) for i, r in enumerate(sas_task.variables.ranges)}
         )
