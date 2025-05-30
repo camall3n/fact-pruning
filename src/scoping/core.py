@@ -174,7 +174,7 @@ def scope_sas_task(
         for key, val in info.items():
             aggregated_info[key] += val
         scoped_sas = scoped_task.to_sas()
-        if scoping_options.enable_forward_pass:
+        if scoping_options.enable_forward_pass:  # TODO: and we pruned something!
             try:
                 simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
             except simplify.Impossible:

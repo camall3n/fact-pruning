@@ -83,6 +83,7 @@ def merge(
     info["Scoping merge attempts"] += 1
 
     # Merging only helps if at least one variable spans its whole domain
+    # TODO: consider whether we only need to span over relevant facts
     precond_facts = FactSet()
     is_empty_precondition = False
     for a in actions:
