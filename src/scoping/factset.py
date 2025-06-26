@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Iterable, Optional, overload, Tuple, Union
 
-VarValPair = Tuple[int, int]
+VarValPair = Tuple[Any, Any]
 
 
 class FactSet:
@@ -24,7 +24,7 @@ class FactSet:
         return f"FactSet({repr(dict(self.facts))})"
 
     def __getitem__(self, key: Any) -> set[Any]:
-        return self.facts[key]
+        return self.facts.get(key, set())
 
     def __eq__(self, other: Optional[FactSet]) -> bool:
         if other is None:
@@ -39,7 +39,7 @@ class FactSet:
 
     @property
     def variables(self) -> list[Any]:
-        return list(self.facts.keys())
+        return [key for key, values in self.facts.items() if len(values) > 0]
 
     @property
     def n_facts(self) -> int:
