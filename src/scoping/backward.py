@@ -18,11 +18,11 @@ def filter_causal_links(
     actions: list[VarValAction],
     enable_fact_based: bool = False,
     enable_causal_links: bool = False,
-) -> tuple[FactSet, list[VarValPair]]:
+) -> FactSet:
     """Remove any facts from `facts` that are present in the initial state `init` and
     unthreatened by any of the `actions`."""
     if not enable_causal_links:
-        return facts, []
+        return facts
 
     affected_facts = FactSet()
     for a in actions:
@@ -36,15 +36,11 @@ def filter_causal_links(
     ]
     unthreatened_init_facts = FactSet(unthreatened_init_facts)
     relevant_facts = FactSet()
-    causal_links = []
     for var, values in facts:
         for val in values:
             if (var, val) not in unthreatened_init_facts:
                 relevant_facts.add(var, val)
-            else:
-                causal_links.append((var, val))
-
-    return relevant_facts, causal_links
+    return relevant_facts
 
 
 def get_goal_relevant_actions(
@@ -114,7 +110,7 @@ def goal_relevance_step(
     enable_causal_links: bool = False,
     enable_fact_based: bool = False,
 ) -> Tuple[FactSet, list[VarValAction], dict]:
-    filtered_facts, causal_links = filter_causal_links(
+    filtered_facts = filter_causal_links(
         facts,
         init,
         relevant_actions,
@@ -131,17 +127,7 @@ def goal_relevance_step(
         relevant_actions,
         enable_merging=enable_merging,
     )
-
-    # double-check causal links
-    # relevant_facts.union(filtered_facts)
     relevant_facts.union(facts)
-    filtered_facts, filtered_causal_links = filter_causal_links(
-        relevant_facts,
-        causal_links,
-        relevant_actions,
-        enable_fact_based=enable_fact_based,
-        enable_causal_links=enable_causal_links,
-    )
 
     return relevant_facts, relevant_actions, info
 
