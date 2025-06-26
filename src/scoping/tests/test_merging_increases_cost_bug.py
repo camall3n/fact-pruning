@@ -95,32 +95,38 @@ def make_task(
     )
 
 
-# %% Initial task
+def test_merging_does_not_increase_cost():
+    # Initial task
+    scoping_task = make_task()
+    # sas_task = scoping_task.to_sas()
+    # with open("simple.sas", "w") as output_file:
+    #     sas_task.output(output_file)
+    # TaskGraph(scoping_task, ScopingOptions(0, 0, 1, 0, 0, 0))
 
-scoping_task = make_task()
-sas_task = scoping_task.to_sas()
-with open("simple.sas", "w") as output_file:
-    sas_task.output(output_file)
-print(len(scoping_task.actions))
-TaskGraph(scoping_task, ScopingOptions(0, 0, 1, 0, 0, 0))
+    # Scoping CF
+    scoped_task_cf = scope(scoping_task, ScopingOptions(1, 0, 1, 0, 0, 0))
+    # print(len(scoped_task_cf.actions))
+    # TaskGraph(scoped_task_cf, ScopingOptions(1, 1, 1, 0, 0))
 
-# %% Scoping CF
-scoped_task = scope(scoping_task, ScopingOptions(1, 0, 1, 0, 0, 0))
-print(len(scoped_task.actions))
-TaskGraph(scoped_task, ScopingOptions(1, 1, 1, 0, 0))
+    #
+    # scoped_sas = scoped_task_cf.to_sas()
+    # with open("simple-cf.sas", "w") as output_file:
+    #     scoped_sas.output(output_file)
 
-# %%
-scoped_sas = scoped_task.to_sas()
-with open("simple-cf.sas", "w") as output_file:
-    scoped_sas.output(output_file)
+    # Scoping MCF
+    scoped_task_mcf = scope(scoping_task, ScopingOptions(1, 1, 1, 0, 0, 0))
+    # print(len(scoped_task.actions))
+    # TaskGraph(scoped_task, ScopingOptions(1, 1, 1, 0, 0))
 
-# %% Scoping MCF
-scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 0, 0, 0))
-print(len(scoped_task.actions))
-TaskGraph(scoped_task, ScopingOptions(1, 1, 1, 0, 0))
+    #
+    # scoped_task.dump()
+    # scoped_sas = scoped_task.to_sas()
+    # with open("simple-mcf.sas", "w") as output_file:
+    #     scoped_sas.output(output_file)
 
-# %%
-scoped_task.dump()
-scoped_sas = scoped_task.to_sas()
-with open("simple-mcf.sas", "w") as output_file:
-    scoped_sas.output(output_file)
+    assert scoped_task_cf == scoped_task_mcf
+
+
+test_merging_does_not_increase_cost()
+
+print("All tests passed.")
