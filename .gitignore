@@ -10,4 +10,5 @@ __pycache__/
 *.zip
 /venv/
 *.egg-info/
-
+.venv
+*.sas
