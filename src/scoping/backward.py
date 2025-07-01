@@ -15,11 +15,15 @@ from scoping.task import ScopingTask
 def filter_causal_links(
     facts: FactSet,
     init: list[VarValPair],
-    actions: set[VarValAction],
+    actions: list[VarValAction],
     enable_fact_based: bool = False,
+    enable_causal_links: bool = False,
 ) -> FactSet:
     """Remove any facts from `facts` that are present in the initial state `init` and
     unthreatened by any of the `actions`."""
+    if not enable_causal_links:
+        return facts
+
     affected_facts = FactSet()
     for a in actions:
         affected_facts.add(a.effect)
@@ -56,7 +60,7 @@ def partition_actions(
     for a in actions:
         unique_effects_and_costs[a.effect_hash(relevant_variables)].append(a)
     # unique_effects_and_costs = set([a.effect_hash(relevant_variables) for a in actions])
-    effect_cost_partitions = unique_effects_and_costs.values()
+    effect_cost_partitions = list(unique_effects_and_costs.values())
     # for effect_cost in unique_effects_and_costs:
     #     matching_actions = [
     #         a for a in actions if a.effect_hash(relevant_variables) == effect_cost
@@ -106,12 +110,14 @@ def goal_relevance_step(
     enable_causal_links: bool = False,
     enable_fact_based: bool = False,
 ) -> Tuple[FactSet, list[VarValAction], dict]:
-    if enable_causal_links:
-        filtered_facts = filter_causal_links(
-            facts, init, relevant_actions, enable_fact_based=enable_fact_based
-        )
-    else:
-        filtered_facts = facts
+    filtered_facts = filter_causal_links(
+        facts,
+        init,
+        relevant_actions,
+        enable_fact_based=enable_fact_based,
+        enable_causal_links=enable_causal_links,
+    )
+
     if not enable_fact_based:
         coarsen_facts_to_variables(filtered_facts, domains)
     relevant_actions = get_goal_relevant_actions(filtered_facts, actions)
@@ -121,7 +127,7 @@ def goal_relevance_step(
         relevant_actions,
         enable_merging=enable_merging,
     )
-    relevant_facts.union(filtered_facts)
+    relevant_facts.union(facts)
 
     return relevant_facts, relevant_actions, info
 
@@ -150,7 +156,9 @@ def compute_goal_relevance(
             enable_causal_links,
             enable_fact_based=enable_fact_based,
         )
-    relevant_facts.add(scoping_task.init)
+    for var, val in scoping_task.init:
+        if var in relevant_facts.variables:
+            relevant_facts.add(var, val)
     return relevant_facts, relevant_actions, info
 
 

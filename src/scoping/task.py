@@ -153,6 +153,6 @@ class ScopingTask:
         print("actions=[")
         for a in self.actions:
             print(
-                f"    VarValAction('{a.name}', {a.precondition}, {a.effect}, {a.cost}),"
+                f'    VarValAction("{a.name}", {a.precondition}, {a.effect}, {a.cost}),'
             )
         print("]")

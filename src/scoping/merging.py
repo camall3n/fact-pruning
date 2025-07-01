@@ -73,6 +73,7 @@ def merge(
     """Get the relevant precondition facts after merging actions"""
     info = {
         "Scoping merge attempts": 0,
+        "Scoping merge successes": 0,
     }
     if len(actions) == 1:
         return get_precondition_facts(actions[0], variable_domains), info
@@ -157,6 +158,9 @@ def merge(
     for action in actions:
         if action.name not in visited_action_names:
             relevant_precond_facts.add(action.precondition)
+
+    if relevant_precond_facts != precond_facts:
+        info["Scoping merge successes"] += 1
 
     return relevant_precond_facts, info
 

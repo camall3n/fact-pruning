@@ -23,7 +23,7 @@ def scope_backward(
     enable_causal_links: bool = True,
     enable_fact_based: bool = True,
 ) -> tuple[ScopingTask, dict]:
-    facts, actions, info = compute_goal_relevance(
+    relevant_facts, relevant_actions, info = compute_goal_relevance(
         scoping_task=scoping_task,
         enable_merging=enable_merging,
         enable_causal_links=enable_causal_links,
@@ -31,16 +31,16 @@ def scope_backward(
     )
     # Explicitly add precond facts in case preconds were dropped in a merge
     precond_facts = FactSet()
-    for a in actions:
+    for a in relevant_actions:
         precond_facts.add(a.precondition)
-    facts.union(precond_facts)
+    relevant_facts.union(precond_facts)
 
     # Also add side-effect facts on relevant vars
-    for a in actions:
+    for a in relevant_actions:
         for var, val in a.effect:
-            if var in facts.variables:
-                facts.add(var, val)
-    return prune_task(scoping_task, facts, actions), info
+            if var in relevant_facts.variables:
+                relevant_facts.add(var, val)
+    return prune_task(scoping_task, relevant_facts, relevant_actions), info
 
 
 def scope_forward(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
@@ -156,6 +156,7 @@ def scope_sas_task(
 ) -> tuple[fd.SASTask, dict]:
     aggregated_info = {
         "Scoping merge attempts": 0,
+        "Scoping merge successes": 0,
         "Scoping vars": f"{len(sas_task.variables.ranges)}",
         "Scoping facts": f"{sum(sas_task.variables.ranges)}",
         "Scoping operators": f"{len(sas_task.operators)}",
