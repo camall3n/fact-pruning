@@ -80,6 +80,8 @@ exp.add_step('start', exp.start_runs)
 exp.add_step("parse", exp.parse)
 
 exp.add_fetcher(name='fetch')
+exp.add_fetcher("data/scoping-scoping-fdr-06-27-2025-base-eval")
+
 
 attributes = [
   "translator_axioms",
@@ -98,7 +100,19 @@ attributes = [
 
 attributes += IssueExperiment.DEFAULT_TABLE_ATTRIBUTES + ["num_merge_attempts"]
 # exp.add_comparison_table_step(attributes=attributes)
-exp.add_absolute_report_step(attributes=attributes)
+
+def rename_algorithms(run):
+    name = run["algorithm"]
+    paper_names = {f"{REVISIONS[0]}-basic": "No scoping", f"{REVISIONS[0]}-fd": "FD"}
+
+    for a in ["V", "F", "CF", "MCF", "RMCF", "LRMCF"]:
+        paper_names[f"{REVISIONS[0]}-{a}"] = a
+    run["algorithm"] = paper_names[name]
+    return run
+
+algos = ["No scoping", "FD", "V", "F", "CF", "MCF", "RMCF", "LRMCF"]
+
+exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algos)
 
 exp.run_steps()
 
