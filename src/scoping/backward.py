@@ -69,7 +69,7 @@ def partition_actions(
     return effect_cost_partitions
 
 
-def coarsen_facts_to_variables(facts: FactSet, domains: FactSet) -> FactSet:
+def coarsen_facts_to_variables(facts: FactSet, domains: FactSet) -> None:
     for var, _ in facts:
         facts.union(var, domains[var])
 

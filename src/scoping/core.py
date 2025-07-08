@@ -6,7 +6,12 @@ import os
 
 import sas_tasks as fd
 from scoping.actions import VarValAction
-from scoping.backward import compute_goal_relevance
+from scoping.backward import (
+    compute_goal_relevance,
+    get_goal_relevant_facts,
+    coarsen_facts_to_variables,
+    filter_causal_links,
+)
 from scoping.forward import compute_reachability
 from scoping.factset import FactSet, VarValPair
 from scoping.options import ScopingOptions
@@ -18,6 +23,72 @@ from translate import unsolvable_sas_task, solvable_sas_task, trivial_task
 
 
 def scope_backward(
+    scoping_task: ScopingTask,
+    enable_merging: bool = True,
+    enable_causal_links: bool = True,
+    enable_fact_based: bool = True,
+) -> tuple[ScopingTask, dict]:
+    relevant_facts = FactSet(scoping_task.goal)
+    relevant_actions = []
+    remaining_actions = scoping_task.actions
+
+    while remaining_actions and relevant_facts != scoping_task.domains:
+        # Find new actions that cause the relevant facts
+        filtered_facts = filter_causal_links(
+            relevant_facts,
+            scoping_task.init,
+            relevant_actions,
+            enable_fact_based=enable_fact_based,
+            enable_causal_links=enable_causal_links,
+        )
+
+        if not enable_fact_based:
+            coarsen_facts_to_variables(filtered_facts, scoping_task.domains)
+
+        newly_relevant_actions, remaining_actions = get_goal_relevant_actions(
+            filtered_facts, remaining_actions
+        )
+
+        if not newly_relevant_actions:
+            break
+        relevant_actions += newly_relevant_actions
+
+        # Find new precondition facts of the relevant actions
+        newly_relevant_facts, info = get_goal_relevant_facts(
+            scoping_task.domains,
+            relevant_facts,
+            relevant_actions,
+            enable_merging=enable_merging,
+        )
+
+        if newly_relevant_facts in relevant_facts:
+            break
+        relevant_facts.union(newly_relevant_facts)
+
+    # Ensure that if init contradicts all relevant_facts, we know about it
+    for var, val in scoping_task.init:
+        if var in relevant_facts.variables:
+            relevant_facts.add(var, val)
+
+    return prune_task(scoping_task, relevant_facts, relevant_actions), info
+
+
+def get_goal_relevant_actions(
+    facts: FactSet, actions: list[VarValAction]
+) -> tuple[list[VarValAction], list[VarValAction]]:
+    relevant_actions = []
+    remaining_actions = []
+    for action in actions:
+        for fact in action.effect:
+            if fact in facts:
+                relevant_actions.append(action)
+                break
+        else:
+            remaining_actions.append(action)
+    return relevant_actions, remaining_actions
+
+
+def old_scope_backward(
     scoping_task: ScopingTask,
     enable_merging: bool = True,
     enable_causal_links: bool = True,
