@@ -29,7 +29,7 @@ def scope_backward(
     enable_fact_based: bool = True,
 ) -> tuple[ScopingTask, dict]:
     relevant_facts = FactSet(scoping_task.goal)
-    relevant_actions = []
+    relevant_actions: list[VarValAction] = []
     remaining_actions = scoping_task.actions
 
     while remaining_actions and relevant_facts != scoping_task.domains:
@@ -65,10 +65,16 @@ def scope_backward(
             break
         relevant_facts.union(newly_relevant_facts)
 
-    # Ensure that if init contradicts all relevant_facts, we know about it
+    # If an init fact contradicts all relevant_facts, or if it contradicts a
+    # precondition, ensure that we can detect it.
     for var, val in scoping_task.init:
         if var in relevant_facts.variables:
             relevant_facts.add(var, val)
+        for action in relevant_actions:
+            for a_var, a_val in action.precondition:
+                if var == a_var and val != a_val:
+                    relevant_facts.add(var, val)
+                    relevant_facts.add(a_var, a_val)
 
     return prune_task(scoping_task, relevant_facts, relevant_actions), info
 
