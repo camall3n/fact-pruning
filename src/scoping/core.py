@@ -76,6 +76,16 @@ def scope_backward(
                     relevant_facts.add(var, val)
                     relevant_facts.add(a_var, a_val)
 
+    if not enable_fact_based:
+        relevant_facts = filter_causal_links(
+            relevant_facts,
+            scoping_task.init,
+            relevant_actions,
+            enable_fact_based=enable_fact_based,
+            enable_causal_links=enable_causal_links,
+        )
+        coarsen_facts_to_variables(relevant_facts, scoping_task.domains)
+
     return prune_task(scoping_task, relevant_facts, relevant_actions), info
 
 
