@@ -32,7 +32,7 @@ def scope_backward(
     relevant_actions: list[VarValAction] = []
     remaining_actions = scoping_task.actions
 
-    while remaining_actions and relevant_facts != scoping_task.domains:
+    while remaining_actions or (relevant_facts != scoping_task.domains):
         # Find new actions that cause the relevant facts
         filtered_facts = filter_causal_links(
             relevant_facts,
