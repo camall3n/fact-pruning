@@ -230,11 +230,26 @@ def scope(
     return scoped_task
 
 
-def track_scoping_progress(info: dict, sas_task: fd.SASTask):
-    info["Scoping vars"] += f" -> {len(sas_task.variables.ranges)}"
-    info["Scoping facts"] += f" -> {sum(sas_task.variables.ranges)}"
-    info["Scoping operators"] += f" -> {len(sas_task.operators)}"
-    return info
+def track_scoping_progress(info: dict, sas_task: fd.SASTask, first=False) -> None:
+    sep = " -> " if not first else ""
+    info["Scoping vars"] += sep + f"{len(sas_task.variables.ranges)}"
+    info["Scoping facts"] += sep + f"{sum(sas_task.variables.ranges)}"
+    info["Scoping operators"] += sep + f"{len(sas_task.operators)}"
+
+
+def pruning_did_occur(sas_task: fd.SASTask, scoped_sas: fd.SASTask) -> bool:
+    n_vars_removed = len(sas_task.variables.ranges) - len(scoped_sas.variables.ranges)
+    n_facts_removed = sum(sas_task.variables.ranges) - sum(scoped_sas.variables.ranges)
+    n_actions_removed = len(sas_task.operators) - len(scoped_sas.operators)
+    something_was_removed = (n_vars_removed + n_facts_removed + n_actions_removed) > 0
+    return something_was_removed
+
+
+def is_trivial(scoped_sas: fd.SASTask) -> bool:
+    return scoped_sas in [
+        trivial_task(solvable=True),
+        trivial_task(solvable=False),
+    ]
 
 
 def scope_sas_task(
@@ -244,10 +259,8 @@ def scope_sas_task(
     aggregated_info = {
         "Scoping merge attempts": 0,
         "Scoping merge successes": 0,
-        "Scoping vars": f"{len(sas_task.variables.ranges)}",
-        "Scoping facts": f"{sum(sas_task.variables.ranges)}",
-        "Scoping operators": f"{len(sas_task.operators)}",
     }
+    track_scoping_progress(aggregated_info, sas_task)
     info = {}
     should_continue = True
     while should_continue:
@@ -262,7 +275,9 @@ def scope_sas_task(
         for key, val in info.items():
             aggregated_info[key] += val
         scoped_sas = scoped_task.to_sas()
-        if scoping_options.enable_forward_pass:  # TODO: and we pruned something!
+        if scoping_options.enable_forward_pass and pruning_did_occur(
+            sas_task, scoped_sas
+        ):
             try:
                 simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
             except simplify.Impossible:
@@ -271,25 +286,12 @@ def scope_sas_task(
                 scoped_sas = solvable_sas_task("Simplified to empty goal")
 
             if scoping_options.enable_loop:
-                n_vars_removed = len(sas_task.variables.ranges) - len(
-                    scoped_sas.variables.ranges
-                )
-                n_facts_removed = sum(sas_task.variables.ranges) - sum(
-                    scoped_sas.variables.ranges
-                )
-                n_actions_removed = len(sas_task.operators) - len(scoped_sas.operators)
-                something_was_removed = (
-                    n_vars_removed + n_facts_removed + n_actions_removed
-                )
-                if something_was_removed and scoped_sas not in [
-                    trivial_task(solvable=True),
-                    trivial_task(solvable=False),
-                ]:
+                if pruning_did_occur(sas_task, scoped_sas) and not is_trivial(
+                    scoped_sas
+                ):
                     sas_task = scoped_sas
                     should_continue = True
-        aggregated_info["Scoping vars"] += f" -> {len(scoped_sas.variables.ranges)}"
-        aggregated_info["Scoping facts"] += f" -> {sum(scoped_sas.variables.ranges)}"
-        aggregated_info["Scoping operators"] += f" -> {len(scoped_sas.operators)}"
+        track_scoping_progress(aggregated_info, scoped_sas)
 
     scoped_sas._sort_all()
     return scoped_sas, aggregated_info
