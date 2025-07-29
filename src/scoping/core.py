@@ -169,6 +169,8 @@ def prune_task(
 
     init = prune_facts(scoping_task.init, facts)
     goal = prune_facts(scoping_task.goal, facts)
+
+    # Prune precondition/effect facts from actions
     actions = [
         VarValAction(
             name=a.name,
@@ -178,6 +180,8 @@ def prune_task(
         )
         for a in actions
     ]
+    actions = [a for a in actions if a.effect]  # then prune empty actions
+
     mutexes = prune_mutexes(scoping_task.mutexes, facts)
     axioms = [
         VarValAction(
