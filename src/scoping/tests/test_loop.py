@@ -61,7 +61,7 @@ def test_values():
     assert scoped_task.domains == FactSet(
         {"w": {0, 1}, "x": {0, 1}, "y": {0, 1}, "z": {0, 2}}
     )
-    assert sorted(a.name for a in scoped_task.actions) == list("abcdefgh")
+    assert sorted(a.name for a in scoped_task.actions) == list("abcdefh")
 
 
 def test_merge():
@@ -99,7 +99,7 @@ def test_merge_values():
     assert scoped_task.domains == FactSet(
         {"w": {0, 1}, "x": {0, 1}, "y": {0, 1}, "z": {0, 2}}
     )
-    assert sorted(a.name for a in scoped_task.actions) == list("bcdefgh")
+    assert sorted(a.name for a in scoped_task.actions) == list("bcdefh")
 
 
 def test_cl_merge():
@@ -127,7 +127,7 @@ def test_forward_none():
     scoped_task = scope(scoping_task, ScopingOptions(0, 0, 0, 1, 0))
 
     assert scoped_task.domains == FactSet({"w": {0, 1}, "x": {0, 1}, "z": {0, 1, 2}})
-    assert sorted(a.name for a in scoped_task.actions) == list("abdefghi")
+    assert sorted(a.name for a in scoped_task.actions) == list("abdefi")
 
 
 def test_forward_cl_merge_values():
@@ -148,15 +148,15 @@ def test_loop():
 
 # %%
 test_none()  # abcdefghi
-test_values()  # abcdefgh
+test_values()  # abcdefh
 test_merge()  # bcdefghi
 test_merge_values()  # abcdefhi
 test_cl()  # abcdef
-test_cl_values()  # bcdefgh
+test_cl_values()  # bcdefh
 test_cl_merge()  # bcdefhi
 test_cl_merge_values()  # bcdef
 
-test_forward_none()  # abdefghi
+test_forward_none()  # abdefi
 test_forward_cl_merge_values()  # def
 test_loop()  # f
 
