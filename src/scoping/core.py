@@ -235,7 +235,13 @@ def scope(
 
 
 def track_scoping_progress(info: dict, sas_task: fd.SASTask, first=False) -> None:
-    sep = " -> " if not first else ""
+    if first:
+        info["Scoping vars"] = ""
+        info["Scoping facts"] = ""
+        info["Scoping operators"] = ""
+        sep = ""
+    else:
+        sep = " -> "
     info["Scoping vars"] += sep + f"{len(sas_task.variables.ranges)}"
     info["Scoping facts"] += sep + f"{sum(sas_task.variables.ranges)}"
     info["Scoping operators"] += sep + f"{len(sas_task.operators)}"
@@ -264,7 +270,7 @@ def scope_sas_task(
         "Scoping merge attempts": 0,
         "Scoping merge successes": 0,
     }
-    track_scoping_progress(aggregated_info, sas_task)
+    track_scoping_progress(aggregated_info, sas_task, first=True)
     info = {}
     should_continue = True
     while should_continue:
