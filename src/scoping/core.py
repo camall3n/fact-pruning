@@ -183,6 +183,12 @@ def prune_task(
     actions = [a for a in actions if a.effect]  # then prune empty actions
 
     mutexes = prune_mutexes(scoping_task.mutexes, facts)
+
+    if scoping_task.axioms:
+        raise NotImplementedError(
+            "Task contains axioms, but axiom pruning is not yet implemented."
+        )
+    # If axiom pruning *were* implemented, here's a sketch of what we might do...
     axioms = [
         VarValAction(
             name="",
