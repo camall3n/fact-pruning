@@ -29,15 +29,26 @@ def scope_backward(
     enable_fact_based: bool = True,
 ) -> tuple[ScopingTask, dict]:
     relevant_facts = FactSet(scoping_task.goal)
-    relevant_actions: list[VarValAction] = []
-    remaining_actions = scoping_task.actions
+    relevant_action_names: set[str] = set()
+    effect_facts_of_relevant_actions = FactSet()
 
-    while remaining_actions or (relevant_facts != scoping_task.domains):
+    action_for_name: dict[str, VarValAction] = {}
+    action_names_for_effect_fact: dict[VarValPair, list[str]] = defaultdict(list)
+    # A query for a fact that doesn't appear in any effect returns an empty list,
+    # otherwise, return the list of actions whose effects contain that fact.
+    for action in scoping_task.actions:
+        action_for_name[action.name] = action
+        for fact in action.effect:
+            action_names_for_effect_fact[fact].append(action.name)
+
+    while len(relevant_action_names) < len(scoping_task.actions) or (
+        relevant_facts != scoping_task.domains
+    ):
         # Find new actions that cause the relevant facts
         filtered_facts = filter_causal_links(
             relevant_facts,
             scoping_task.init,
-            relevant_actions,
+            effect_facts_of_relevant_actions,
             enable_fact_based=enable_fact_based,
             enable_causal_links=enable_causal_links,
         )
@@ -45,25 +56,28 @@ def scope_backward(
         if not enable_fact_based:
             coarsen_facts_to_variables(filtered_facts, scoping_task.domains)
 
-        newly_relevant_actions, remaining_actions = get_goal_relevant_actions(
-            filtered_facts, remaining_actions
+        newly_relevant_action_names = get_goal_relevant_actions(
+            filtered_facts, relevant_action_names, action_names_for_effect_fact
         )
-
-        if not newly_relevant_actions:
+        if not newly_relevant_action_names:
             break
-        relevant_actions += newly_relevant_actions
+        for action_name in newly_relevant_action_names:
+            effect_facts_of_relevant_actions.add(action_for_name[action_name].effect)
+            relevant_action_names.add(action_name)
 
         # Find new precondition facts of the relevant actions
         newly_relevant_facts, info = get_goal_relevant_facts(
             scoping_task.domains,
             relevant_facts,
-            relevant_actions,
+            # XXX: Is using just newly relevant actions allowed? Or do we need ALL relevant actions?
+            [action_for_name[name] for name in newly_relevant_action_names],
             enable_merging=enable_merging,
         )
-
         if newly_relevant_facts in relevant_facts:
             break
         relevant_facts.union(newly_relevant_facts)
+
+    relevant_actions = [action_for_name[name] for name in relevant_action_names]
 
     # If an init fact contradicts all relevant_facts, or if it contradicts a
     # precondition, ensure that we can detect it.
@@ -80,7 +94,7 @@ def scope_backward(
         relevant_facts = filter_causal_links(
             relevant_facts,
             scoping_task.init,
-            relevant_actions,
+            effect_facts_of_relevant_actions,
             enable_fact_based=enable_fact_based,
             enable_causal_links=enable_causal_links,
         )
@@ -90,18 +104,18 @@ def scope_backward(
 
 
 def get_goal_relevant_actions(
-    facts: FactSet, actions: list[VarValAction]
-) -> tuple[list[VarValAction], list[VarValAction]]:
-    relevant_actions = []
-    remaining_actions = []
-    for action in actions:
-        for fact in action.effect:
-            if fact in facts:
-                relevant_actions.append(action)
-                break
-        else:
-            remaining_actions.append(action)
-    return relevant_actions, remaining_actions
+    facts: FactSet,
+    relevant_action_names: set[str],
+    action_names_for_effect_fact: dict[VarValPair, list[str]],
+) -> set[str]:
+    newly_relevant_actions = set()
+    for var, values in facts:
+        for val in values:
+            for a in action_names_for_effect_fact[(var, val)]:
+                if a not in relevant_action_names:
+                    newly_relevant_actions.add(a)
+
+    return newly_relevant_actions
 
 
 def old_scope_backward(

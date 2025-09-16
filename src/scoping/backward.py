@@ -15,18 +15,14 @@ from scoping.task import ScopingTask
 def filter_causal_links(
     facts: FactSet,
     init: list[VarValPair],
-    actions: list[VarValAction],
+    effect_facts: FactSet,
     enable_fact_based: bool = False,
     enable_causal_links: bool = False,
 ) -> FactSet:
     """Remove any facts from `facts` that are present in the initial state `init` and
-    unthreatened by any of the `actions`."""
+    unthreatened by any of the `effect_facts`."""
     if not enable_causal_links:
         return facts
-
-    effect_facts = FactSet()
-    for a in actions:
-        effect_facts.add(a.effect)
 
     def benign_sets(val):
         return [set(), set([val])] if enable_fact_based else [set()]
