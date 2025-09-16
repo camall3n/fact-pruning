@@ -24,15 +24,16 @@ def filter_causal_links(
     if not enable_causal_links:
         return facts
 
-    affected_facts = FactSet()
+    effect_facts = FactSet()
     for a in actions:
-        affected_facts.add(a.effect)
+        effect_facts.add(a.effect)
 
     def benign_sets(val):
         return [set(), set([val])] if enable_fact_based else [set()]
 
+    # [(var, val) in s0 s.t. dne action `a` where eff(a)[var] ≠ val]
     unthreatened_init_facts = [
-        (var, val) for (var, val) in init if affected_facts[var] in benign_sets(val)
+        (var, val) for (var, val) in init if effect_facts[var] in benign_sets(val)
     ]
     unthreatened_init_facts = FactSet(unthreatened_init_facts)
     relevant_facts = FactSet()
