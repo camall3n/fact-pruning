@@ -4,7 +4,7 @@ import iceberg as ice
 
 from scoping.task import ScopingTask, VarValPair, VarValAction
 from scoping.options import ScopingOptions
-from scoping.backward import goal_relevance_step, coarsen_facts_to_variables
+from scoping.backward import coarsen_facts_to_variables
 from scoping.forward import reachability_step
 from scoping.factset import FactSet
 
@@ -44,6 +44,9 @@ def compute_backward_scoping_layer(
     task: ScopingTask,
     options: ScopingOptions,
 ) -> tuple[FactSet, list[VarValAction], bool]:
+    raise NotImplementedError(
+        "This function relies on the obsolete goal_relevance_step()."
+    )
     if layer is None:
         layer = math.inf
     enable_merging: bool = options.enable_merging

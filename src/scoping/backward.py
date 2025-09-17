@@ -86,119 +86,13 @@ def get_goal_relevant_facts(
         # make an separate partition for each action
         action_partitions = list(map(lambda x: [x], relevant_actions))
 
-    relevant_facts = FactSet()
+    newly_relevant_facts = FactSet()
     aggregated_info = defaultdict(int)
     for actions in action_partitions:
         relevant_precond_facts, info = merge(actions, relevant_vars, domains)
         for key, val in info.items():
             aggregated_info[key] += val
-        relevant_facts.union(relevant_precond_facts)
+        newly_relevant_facts.union(relevant_precond_facts)
+    newly_relevant_facts.difference(relevant_facts)
 
-    return relevant_facts, aggregated_info
-
-
-def goal_relevance_step(
-    domains: FactSet,
-    facts: FactSet,
-    init: list[VarValPair],
-    actions: list[VarValAction],
-    relevant_actions: list[VarValAction],
-    enable_merging: bool = False,
-    enable_causal_links: bool = False,
-    enable_fact_based: bool = False,
-) -> Tuple[FactSet, list[VarValAction], dict]:
-    filtered_facts = filter_causal_links(
-        facts,
-        init,
-        relevant_actions,
-        enable_fact_based=enable_fact_based,
-        enable_causal_links=enable_causal_links,
-    )
-
-    if not enable_fact_based:
-        coarsen_facts_to_variables(filtered_facts, domains)
-    relevant_actions = get_goal_relevant_actions(filtered_facts, actions)
-    relevant_facts, info = get_goal_relevant_facts(
-        domains,
-        filtered_facts,
-        relevant_actions,
-        enable_merging=enable_merging,
-    )
-    relevant_facts.union(facts)
-
-    return relevant_facts, relevant_actions, info
-
-
-def compute_goal_relevance(
-    scoping_task: ScopingTask,
-    enable_merging: bool = False,
-    enable_causal_links: bool = False,
-    enable_fact_based: bool = False,
-) -> Tuple[FactSet, list[VarValAction], dict]:
-    relevant_facts = FactSet(scoping_task.goal)
-    if not enable_fact_based:
-        coarsen_facts_to_variables(relevant_facts, scoping_task.domains)
-    relevant_actions = []
-    prev_facts = None
-    prev_actions = []
-    while relevant_facts != prev_facts or len(relevant_actions) != len(prev_actions):
-        prev_facts, prev_actions = relevant_facts, relevant_actions
-        relevant_facts, relevant_actions, info = goal_relevance_step(
-            scoping_task.domains,
-            relevant_facts,
-            scoping_task.init,
-            scoping_task.actions,
-            relevant_actions,
-            enable_merging,
-            enable_causal_links,
-            enable_fact_based=enable_fact_based,
-        )
-    for var, val in scoping_task.init:
-        if var in relevant_facts.variables:
-            relevant_facts.add(var, val)
-    return relevant_facts, relevant_actions, info
-
-
-# %%
-if __name__ == "main":
-    import options
-    import pddl_parser
-    from scoping.sas_parser import SasParser
-    from translate import pddl_to_sas
-
-    # domain_filename = "../../../scoping/domains/propositional/ipc/gripper/domain.pddl"
-    # task_filename = "../../../scoping/domains/propositional/ipc/gripper/prob04.pddl"
-
-    domain_filename = (
-        "../../../scoping/domains/propositional/toy-minecraft/toy-example.pddl"
-    )
-    task_filename = (
-        "../../../scoping/domains/propositional/toy-minecraft/example-2.pddl"
-    )
-    options.keep_unimportant_variables = True
-    options.keep_unreachable_facts = True
-    options.sas_file = True
-    task = pddl_parser.open(domain_filename, task_filename)
-    sas_task: SASTask = pddl_to_sas(task)
-
-    # %%
-    # sas_path = "../../toy-minecraft-merging.sas"
-    # parser = SasParser(pth=sas_path)
-    # parser.parse()
-    # sas_task: SASTask = parser.to_fd()
-
-    # %%
-    # sas_task.dump()
-
-    for merging in [False, True]:
-        for causal_links in [False, True]:
-            facts, actions, info = compute_goal_relevance(
-                sas_task,
-                enable_merging=merging,
-                enable_causal_links=causal_links,
-            )
-            print(f"{merging=}")
-            print(f"{causal_links=}")
-            print("actions:", len(actions), sorted(a.name for a in actions))
-            print("facts:", sorted(facts))
-            print()
+    return newly_relevant_facts, aggregated_info

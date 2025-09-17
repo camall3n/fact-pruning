@@ -46,15 +46,20 @@ class FactSet:
         return sum([len(values) for _, values in self])
 
     @overload
-    def add(self, var: Any, val: Any) -> None: ...
+    def add(self, var: Any, val: Any) -> None:
+        """Add a new fact to the FactSet"""
+        ...
+
     @overload
-    def add(self, facts_iterable: Iterable[VarValPair]) -> None: ...
+    def add(self, facts_iterable: Iterable[VarValPair]) -> None:
+        """Add a list of facts to the FactSet"""
+        ...
+
     def add(
         self,
         facts_iterable_or_var: Union[Any, Iterable[VarValPair]],
         val: Optional[Any] = None,
     ) -> None:
-        """Add a new fact (var = val), or an iterable of such facts, to the FactSet"""
         if val is None:
             facts_iterable = facts_iterable_or_var
             for var, val in facts_iterable:
@@ -64,15 +69,20 @@ class FactSet:
             self.facts[var].add(val)
 
     @overload
-    def union(self, other_facts: FactSet | dict) -> None: ...
+    def union(self, other_facts: FactSet | dict[Any, set[Any]]) -> None:
+        """Take the in-place union of the FactSet with the specified additional facts"""
+        ...
+
     @overload
-    def union(self, var: Any, values: set[Any]) -> None: ...
+    def union(self, var: Any, values: set[Any]) -> None:
+        """Add the specified variable values to the FactSet"""
+        ...
+
     def union(
         self,
-        other_facts_or_var: Union[FactSet, Any],
-        values: Optional[set[Any]] = None,
+        other_facts_or_var: FactSet | dict[Any, set[Any]] | Any,
+        values: set[Any] | None = None,
     ) -> None:
-        """Take the in-place union of the FactSet with the specified additional facts"""
         if values is None:
             other_facts = other_facts_or_var
             if isinstance(other_facts, FactSet):
@@ -82,6 +92,34 @@ class FactSet:
         else:
             var = other_facts_or_var
             self.facts[var] = self.facts[var].union(values)
+
+    @overload
+    def difference(self, other_facts: FactSet | dict) -> None:
+        """Remove all facts from this FactSet that appear in the other FactSet."""
+        ...
+
+    @overload
+    def difference(self, var: Any, values: set[Any]) -> None:
+        """Remove the specified variable values from the FactSet if present."""
+        ...
+
+    def difference(
+        self,
+        other_facts_or_var: FactSet | Any,
+        values: set[Any] | None = None,
+    ) -> None:
+        if values is None:
+            other_facts = other_facts_or_var
+            if isinstance(other_facts, FactSet):
+                other_facts = other_facts.facts
+            for var, values in other_facts.items():
+                self.difference(var, values)
+        else:
+            var = other_facts_or_var
+            if var in self.variables:
+                self.facts[var] = self.facts[var].difference(values)
+                if not self.facts[var]:
+                    del self.facts[var]
 
     def __contains__(self, item: VarValPair | FactSet) -> bool:
         """Check if a (var, val) pair is an element of the FactSet, or if another

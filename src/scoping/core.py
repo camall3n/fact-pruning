@@ -7,7 +7,6 @@ import os
 import sas_tasks as fd
 from scoping.actions import VarValAction
 from scoping.backward import (
-    compute_goal_relevance,
     get_goal_relevant_facts,
     coarsen_facts_to_variables,
     filter_causal_links,
@@ -30,7 +29,10 @@ def scope_backward(
 ) -> tuple[ScopingTask, dict]:
     relevant_facts = FactSet(scoping_task.goal)
     relevant_action_names: set[str] = set()
+    newly_relevant_facts = relevant_facts
+    newly_relevant_action_names = relevant_action_names
     effect_facts_of_relevant_actions = FactSet()
+    new_effect_facts = set()
 
     action_for_name: dict[str, VarValAction] = {}
     action_names_for_effect_fact: dict[VarValPair, list[str]] = defaultdict(list)
@@ -41,8 +43,11 @@ def scope_backward(
         for fact in action.effect:
             action_names_for_effect_fact[fact].append(action.name)
 
-    while len(relevant_action_names) < len(scoping_task.actions) or (
-        relevant_facts != scoping_task.domains
+    while (
+        newly_relevant_facts or newly_relevant_action_names or new_effect_facts
+    ) and (
+        len(relevant_action_names) < len(scoping_task.actions)
+        or (relevant_facts != scoping_task.domains)
     ):
         # Find new actions that cause the relevant facts
         filtered_facts = filter_causal_links(
@@ -59,22 +64,26 @@ def scope_backward(
         newly_relevant_action_names = get_goal_relevant_actions(
             filtered_facts, relevant_action_names, action_names_for_effect_fact
         )
-        if not newly_relevant_action_names:
-            break
+        new_effect_facts = set()
         for action_name in newly_relevant_action_names:
-            effect_facts_of_relevant_actions.add(action_for_name[action_name].effect)
             relevant_action_names.add(action_name)
+            for var, val in action_for_name[action_name].effect:
+                if (var, val) not in effect_facts_of_relevant_actions:
+                    new_effect_facts.add((var, val))
+                    effect_facts_of_relevant_actions.add(var, val)
 
         # Find new precondition facts of the relevant actions
         newly_relevant_facts, info = get_goal_relevant_facts(
             scoping_task.domains,
             relevant_facts,
-            # XXX: Is using just newly relevant actions allowed? Or do we need ALL relevant actions?
-            [action_for_name[name] for name in newly_relevant_action_names],
+            # Need to look at ALL relevant actions, not just the new ones, because if actions
+            # previously merged with a restricted set of relevant vars, but no longer merge
+            # now that we have more relevant variables, we need to add their preconditions.
+            #
+            # Example: test_temporary_merge.py
+            [action_for_name[name] for name in relevant_action_names],
             enable_merging=enable_merging,
         )
-        if newly_relevant_facts in relevant_facts:
-            break
         relevant_facts.union(newly_relevant_facts)
 
     relevant_actions = [action_for_name[name] for name in relevant_action_names]
@@ -116,32 +125,6 @@ def get_goal_relevant_actions(
                     newly_relevant_actions.add(a)
 
     return newly_relevant_actions
-
-
-def old_scope_backward(
-    scoping_task: ScopingTask,
-    enable_merging: bool = True,
-    enable_causal_links: bool = True,
-    enable_fact_based: bool = True,
-) -> tuple[ScopingTask, dict]:
-    relevant_facts, relevant_actions, info = compute_goal_relevance(
-        scoping_task=scoping_task,
-        enable_merging=enable_merging,
-        enable_causal_links=enable_causal_links,
-        enable_fact_based=enable_fact_based,
-    )
-    # Explicitly add precond facts in case preconds were dropped in a merge
-    precond_facts = FactSet()
-    for a in relevant_actions:
-        precond_facts.add(a.precondition)
-    relevant_facts.union(precond_facts)
-
-    # Also add side-effect facts on relevant vars
-    for a in relevant_actions:
-        for var, val in a.effect:
-            if var in relevant_facts.variables:
-                relevant_facts.add(var, val)
-    return prune_task(scoping_task, relevant_facts, relevant_actions), info
 
 
 def scope_forward(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
