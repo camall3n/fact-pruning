@@ -65,16 +65,21 @@ def scope_backward(
             break
         relevant_facts.union(newly_relevant_facts)
 
-    # If an init fact contradicts all relevant_facts, or if it contradicts a
-    # precondition, ensure that we can detect it.
+    # add relevant actions' precondition facts to relevant facts
+    # (this is only non-trivial for merging)
+    for action in relevant_actions:
+        relevant_facts.add(action.precondition)
+
+    # add relevant action effects if they conflict with relevant facts
+    for action in relevant_actions:
+        for var, val in action.effect:
+            if var in relevant_facts.variables:
+                relevant_facts.add(var, val)
+
+    # add init facts if they conflict with relevant facts
     for var, val in scoping_task.init:
         if var in relevant_facts.variables:
             relevant_facts.add(var, val)
-        for action in relevant_actions:
-            for a_var, a_val in action.precondition:
-                if var == a_var and val != a_val:
-                    relevant_facts.add(var, val)
-                    relevant_facts.add(a_var, a_val)
 
     if not enable_fact_based:
         relevant_facts = filter_causal_links(
