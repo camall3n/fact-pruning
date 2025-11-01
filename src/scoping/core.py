@@ -140,6 +140,16 @@ def scope_forward(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
     return prune_task(scoping_task, facts, actions), goal_reachable
 
 
+def compute_sas_reachability(scoped_sas: fd.SASTask):
+    try:
+        simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
+    except simplify.Impossible:
+        scoped_sas = unsolvable_sas_task("Simplified to trivially false goal")
+    except simplify.TriviallySolvable:
+        scoped_sas = solvable_sas_task("Simplified to empty goal")
+    return scoped_sas
+
+
 def prune_facts(fact_list: list[VarValPair], relevant_facts: FactSet):
     return [fact for fact in fact_list if fact in relevant_facts]
 
@@ -299,12 +309,7 @@ def scope_sas_task(
         if scoping_options.enable_forward_pass and pruning_did_occur(
             sas_task, scoped_sas
         ):
-            try:
-                simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
-            except simplify.Impossible:
-                scoped_sas = unsolvable_sas_task("Simplified to trivially false goal")
-            except simplify.TriviallySolvable:
-                scoped_sas = solvable_sas_task("Simplified to empty goal")
+            scoped_sas = compute_sas_reachability(scoped_sas)
 
             if scoping_options.enable_loop:
                 if pruning_did_occur(sas_task, scoped_sas) and not is_trivial(
