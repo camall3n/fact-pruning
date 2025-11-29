@@ -67,7 +67,8 @@ def parse_args():
         "'M' (merging), 'R' (forward reachability), and 'L' (looped). Note that 'V' and "
         "'F' are mutually exclusive, and 'L' requires 'R'.")
     args = argparser.parse_args()
-    args.scoping = args.scoping.upper()
+    if args.scoping:
+        args.scoping = args.scoping.upper()
     return args
 
 def copy_args_to_module(args):
