@@ -66,8 +66,9 @@ def parse_args():
         "to search. Options include: 'V' (variables), 'F' (facts), 'C' (causal links), "
         "'M' (merging), 'R' (forward reachability), and 'L' (looped). Note that 'V' and "
         "'F' are mutually exclusive, and 'L' requires 'R'.")
-    return argparser.parse_args()
-
+    args = argparser.parse_args()
+    args.scoping = args.scoping.upper()
+    return args
 
 def copy_args_to_module(args):
     module_dict = sys.modules[__name__].__dict__
