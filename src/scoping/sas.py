@@ -4,7 +4,7 @@ import argparse
 import os
 
 import sas_tasks as fd
-from scoping.new import scope
+from scoping.scoping import scope
 from scoping.options import ScopingOptions
 from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask

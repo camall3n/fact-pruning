@@ -4,7 +4,7 @@ from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
 from scoping.visualization import TaskGraph
-from scoping.core import scope
+from scoping.sas import scope
 
 
 # %%

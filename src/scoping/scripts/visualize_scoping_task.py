@@ -2,7 +2,7 @@
 # %%
 
 from scoping.actions import VarValAction
-from scoping.core import scope
+from scoping.sas import scope
 from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask

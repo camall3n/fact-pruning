@@ -1,6 +1,6 @@
 #!%cd ~/dev/downward/src/translate
 #
-from scoping.core import scope_sas
+from scoping.sas import scope_sas
 from scoping.options import ScopingOptions
 
 
