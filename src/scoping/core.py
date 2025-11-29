@@ -14,6 +14,7 @@ from scoping.backward import (
 )
 from scoping.forward import compute_reachability
 from scoping.factset import FactSet, VarValPair
+from scoping.new import scope as new_scope
 from scoping.options import ScopingOptions
 from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
@@ -283,44 +284,12 @@ def is_trivial(scoped_sas: fd.SASTask) -> bool:
     ]
 
 
-def scope_sas_task(
-    sas_task: fd.SASTask,
-    scoping_options: ScopingOptions,
-) -> tuple[fd.SASTask, dict]:
-    aggregated_info = {
-        "Scoping merge attempts": 0,
-        "Scoping merge successes": 0,
-    }
-    track_scoping_progress(aggregated_info, sas_task, first=True)
-    info = {}
-    should_continue = True
-    while should_continue:
-        should_continue = False
-        scoping_task = ScopingTask.from_sas(sas_task)
-        scoped_task, info = scope_backward(
-            scoping_task,
-            enable_merging=scoping_options.enable_merging,
-            enable_causal_links=scoping_options.enable_causal_links,
-            enable_fact_based=scoping_options.enable_fact_based,
-        )
-        for key, val in info.items():
-            aggregated_info[key] += val
-        scoped_sas = scoped_task.to_sas()
-        if scoping_options.enable_forward_pass and pruning_did_occur(
-            sas_task, scoped_sas
-        ):
-            scoped_sas = compute_sas_reachability(scoped_sas)
-
-            if scoping_options.enable_loop:
-                if pruning_did_occur(sas_task, scoped_sas) and not is_trivial(
-                    scoped_sas
-                ):
-                    sas_task = scoped_sas
-                    should_continue = True
-        track_scoping_progress(aggregated_info, scoped_sas)
-
+def scope_sas_task(sas_task: fd.SASTask, scoping_options: ScopingOptions) -> fd.SASTask:
+    scoping_task = ScopingTask.from_sas(sas_task)
+    scoped_task = new_scope(scoping_task, scoping_options)
+    scoped_sas = scoped_task.to_sas()
     scoped_sas._sort_all()
-    return scoped_sas, aggregated_info
+    return scoped_sas
 
 
 def scope_sas_file(
@@ -330,9 +299,7 @@ def scope_sas_file(
     parser = SasParser(pth=sas_path)
     parser.parse()
     sas_task: fd.SASTask = parser.to_fd()
-    scoped_sas, info = scope_sas_task(sas_task, scoping_options)
-    for key, val in sorted(info.items()):
-        print(f"{key}: {val}")
+    scoped_sas = scope_sas_task(sas_task, scoping_options)
 
     if scoping_options.write_output_file:
         filepath, ext = os.path.splitext(sas_path)
@@ -340,7 +307,6 @@ def scope_sas_file(
         with timers.timing("Writing output"):
             with open(output_filename, "w") as f:
                 scoped_sas.output(f)
-    return info
 
 
 def parse_args():

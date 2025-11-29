@@ -14,15 +14,25 @@ class ScopingTask:
     mutexes: list[list[VarValPair]] = field(default_factory=list)
     axioms: list[VarValAction] = field(default_factory=list)
     metric: bool = False
-    value_names: dict[int, list[str]] = field(default_factory=dict)
+    value_names: dict[str | int, list[str]] = field(default_factory=dict)
+
+    def __post_init__(self):
+        if not self.value_names:
+            self.value_names = {var: list(values) for var, values in self.domains}
 
     @classmethod
-    def from_sas(cls, sas_task: fd.SASTask) -> "ScopingTask":
+    def from_sas(
+        cls, sas_task: fd.SASTask, sorted_vars: list[str | int] | None
+    ) -> "ScopingTask":
+        if sorted_vars is None:
+            sorted_vars = list(range(len(sas_task.variables.ranges)))
         domains = FactSet(
-            {i: set(range(r)) for i, r in enumerate(sas_task.variables.ranges)}
+            {i: set(range(r)) for i, r in zip(sorted_vars, sas_task.variables.ranges)}
         )
-        value_names = {i: vals for i, vals in enumerate(sas_task.variables.value_names)}
-        init = list(enumerate(sas_task.init.values))
+        value_names = {
+            i: vals for i, vals in zip(sorted_vars, sas_task.variables.value_names)
+        }
+        init = list(zip(sorted_vars, sas_task.init.values))
         goal = sas_task.goal.pairs
         actions = [VarValAction.from_sas(op) for op in sas_task.operators]
         mutexes = [mutex.facts for mutex in sas_task.mutexes]

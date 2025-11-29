@@ -3,6 +3,7 @@
 
 from scoping.actions import VarValAction
 from scoping.core import scope
+from scoping.new import scope
 from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
@@ -46,15 +47,15 @@ def make_task(
     return ScopingTask(domains, init, goal, actions)
 
 
-def test_none():
+def test_v():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(0, 0, 0, 0, 0))
 
-    assert scoped_task.domains == scoping_task.domains
-    assert sorted(a.name for a in scoped_task.actions) == list("abcdefghi")
+    assert sorted(scoped_task.domains.variables) == ["w", "x", "y", "z"]
+    assert sorted(a.name for a in scoped_task.actions) == list("abcdefhi")
 
 
-def test_values():
+def test_f():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(0, 0, 1, 0, 0))
 
@@ -64,7 +65,7 @@ def test_values():
     assert sorted(a.name for a in scoped_task.actions) == list("abcdefh")
 
 
-def test_merge():
+def test_m():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(0, 1, 0, 0, 0))
 
@@ -72,7 +73,7 @@ def test_merge():
     assert sorted(a.name for a in scoped_task.actions) == list("bcdefghi")
 
 
-def test_cl():
+def test_c():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 0, 0, 0, 0))
 
@@ -82,7 +83,7 @@ def test_cl():
     assert sorted(a.name for a in scoped_task.actions) == list("abcdefhi")
 
 
-def test_cl_values():
+def test_cf():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 0, 1, 0, 0))
 
@@ -92,7 +93,7 @@ def test_cl_values():
     assert sorted(a.name for a in scoped_task.actions) == list("abcdef")
 
 
-def test_merge_values():
+def test_mf():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(0, 1, 1, 0, 0))
 
@@ -102,7 +103,7 @@ def test_merge_values():
     assert sorted(a.name for a in scoped_task.actions) == list("bcdefh")
 
 
-def test_cl_merge():
+def test_mc():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 0, 0, 0))
 
@@ -112,7 +113,7 @@ def test_cl_merge():
     assert sorted(a.name for a in scoped_task.actions) == list("bcdefhi")
 
 
-def test_cl_merge_values():
+def test_mcf():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 0, 0))
 
@@ -122,7 +123,7 @@ def test_cl_merge_values():
     assert sorted(a.name for a in scoped_task.actions) == list("bcdef")
 
 
-def test_forward_none():
+def test_r():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(0, 0, 0, 1, 0))
 
@@ -130,15 +131,14 @@ def test_forward_none():
     assert sorted(a.name for a in scoped_task.actions) == list("abdefi")
 
 
-def test_forward_cl_merge_values():
+def test_rmcf():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 1, 0))
-
     assert scoped_task.domains == FactSet({"x": {0, 1}, "z": {0, 2}})
     assert sorted(a.name for a in scoped_task.actions) == list("def")
 
 
-def test_loop():
+def test_lrmcf():
     scoping_task = make_task()
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 1, 1))
 
@@ -147,18 +147,13 @@ def test_loop():
 
 
 # %%
-test_none()  # abcdefghi
-test_values()  # abcdefh
-test_merge()  # bcdefghi
-test_merge_values()  # abcdefhi
-test_cl()  # abcdef
-test_cl_values()  # bcdefh
-test_cl_merge()  # bcdefhi
-test_cl_merge_values()  # bcdef
-
-test_forward_none()  # abdefi
-test_forward_cl_merge_values()  # def
-test_loop()  # f
+test_v()  # abcdefhi
+test_f()  # abcdefh
+test_cf()  # bcdefh
+test_mcf()  # bcdef
+# %%
+test_rmcf()  # def
+test_lrmcf()  # f
 
 print("All tests passed.")
 
