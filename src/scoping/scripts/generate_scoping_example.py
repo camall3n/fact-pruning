@@ -5,7 +5,7 @@ import random
 from tqdm import tqdm
 
 from scoping.actions import VarValAction
-from scoping.core import scope, scope_forward
+from scoping.sas import scope, scope_forward
 from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
