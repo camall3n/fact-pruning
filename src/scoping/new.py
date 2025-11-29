@@ -10,19 +10,10 @@ from scoping.factset import FactSet, VarValPair
 from scoping.merging import merge
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
-from translate import simplify
-from translate import unsolvable_sas_task, solvable_sas_task, trivial_task
 
 
 def prune_facts(fact_list: list[VarValPair], relevant_facts: FactSet):
     return [fact for fact in fact_list if fact in relevant_facts]
-
-
-def is_trivial(scoped_sas: fd.SASTask) -> bool:
-    return scoped_sas in [
-        trivial_task(solvable=True),
-        trivial_task(solvable=False),
-    ]
 
 
 def prune_mutexes(
@@ -162,7 +153,7 @@ def relevance(scoping_task: ScopingTask, options: ScopingOptions) -> list[VarVal
     return actions
 
 
-def prune_non_reachable(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
+def prune_non_reachable(scoping_task: ScopingTask) -> ScopingTask:
     prev_facts = FactSet(scoping_task.init)
     prev_actions = []
     while True:
@@ -177,23 +168,14 @@ def prune_non_reachable(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
             break
         prev_facts = facts
         prev_actions = actions
-    return prune(scoping_task, actions), False
 
-
-# def prune_non_reachable(scoping_task: ScopingTask) -> tuple[ScopingTask, bool]:
-#     sorted_vars = sorted(scoping_task.domains.variables)
-#     sas_task = scoping_task.to_sas()
-#     is_trivial = False
-#     try:
-#         simplify.filter_unreachable_propositions(sas_task, quiet=True)
-#     except simplify.Impossible:
-#         sas_task = unsolvable_sas_task("Simplified to trivially false goal")
-#         is_trivial = True
-#     except simplify.TriviallySolvable:
-#         sas_task = solvable_sas_task("Simplified to empty goal")
-#         is_trivial = True
-#     pruned_task = ScopingTask.from_sas(sas_task, sorted_vars)
-#     return pruned_task, is_trivial
+    if FactSet(scoping_task.goal) not in facts:
+        scoped_task = ScopingTask.trivial(solvable=False)
+    else:
+        scoped_task = prune(scoping_task, actions)
+        if FactSet(scoped_task.goal) in FactSet(scoped_task.init):
+            scoped_task = ScopingTask.trivial(solvable=True)
+    return scoped_task
 
 
 def reduce_and_get_facts(
@@ -249,9 +231,13 @@ def scope(scoping_task: ScopingTask, options: ScopingOptions) -> ScopingTask:
         update_stats(stats, scoped_task)
         if not options.enable_forward_pass or scoped_task == scoping_task:
             break
-        scoped_task, is_trivial = prune_non_reachable(scoped_task)
+        scoped_task = prune_non_reachable(scoped_task)
         update_stats(stats, scoped_task)
-        if not options.enable_loop or scoped_task == scoping_task or is_trivial:
+        if (
+            not options.enable_loop
+            or scoped_task == scoping_task
+            or scoped_task.is_trivial()
+        ):
             break
         scoping_task = scoped_task
     for key, val in sorted(stats.items()):

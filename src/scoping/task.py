@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import sas_tasks as fd
 from scoping.actions import VarValAction
 from scoping.factset import FactSet, VarValPair
+from translate import unsolvable_sas_task, solvable_sas_task
 
 
 @dataclass
@@ -21,8 +22,19 @@ class ScopingTask:
             self.value_names = {var: list(values) for var, values in self.domains}
 
     @classmethod
+    def trivial(cls, solvable: bool) -> "ScopingTask":
+        if solvable:
+            sas_task = solvable_sas_task("Simplified to empty goal")
+        else:
+            sas_task = unsolvable_sas_task("Simplified to trivially false goal")
+        return cls.from_sas(sas_task)
+
+    def is_trivial(self) -> bool:
+        return len(self.actions) == 0
+
+    @classmethod
     def from_sas(
-        cls, sas_task: fd.SASTask, sorted_vars: list[str | int] | None
+        cls, sas_task: fd.SASTask, sorted_vars: list[str | int] | None = None
     ) -> "ScopingTask":
         if sorted_vars is None:
             sorted_vars = list(range(len(sas_task.variables.ranges)))
