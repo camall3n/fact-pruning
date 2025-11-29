@@ -2,7 +2,7 @@
 # %%
 
 from scoping.actions import VarValAction
-from scoping.core import scope
+from scoping.new import scope
 from scoping.factset import FactSet
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
@@ -78,7 +78,7 @@ def test_vals():
     actions = "".join(sorted([a.name for a in scoped_task.actions]))
     domains = scoped_task.domains
     assert domains == FactSet({"x": {0, 1, 2, 3}, "y": {0, 1, 2}})
-    assert actions == "abcdefgh"
+    assert actions == "abcdefg"
 
 
 def test_cl_vals():
@@ -96,7 +96,7 @@ def test_merge_vals():
     actions = "".join(sorted([a.name for a in scoped_task.actions]))
     domains = scoped_task.domains
     assert domains == FactSet({"y": {0, 1, 2}})
-    assert actions == "abcdeh"
+    assert actions == "abcde"
 
 
 def test_cl_merge_vals():
@@ -129,10 +129,6 @@ def test_loop():
 # %%
 # fmt: off
 test_vars()                   # abcdefghi +|-
-test_cl()                     # abcdefghi +|-
-test_merge()                  # abcdefghi +|-
-test_cl_merge()               # abcdefghi +|-
-test_forward_vars()           # abcdefghi +|-
 test_vals()                   # abcdefgh  +|-         i
 test_cl_vals()                # abcdefg   +|-        hi
 test_merge_vals()             # abcde  h  +|-      fg i

@@ -760,14 +760,7 @@ def main(domain_filename=None, task_filename=None):
                 enable_forward_pass=("R" in options.scoping),
                 enable_loop=("L" in options.scoping),
             )
-            sas_task, info = scope_sas_task(sas_task, scoping_options)
-            for key in [
-                "Scoping vars",
-                "Scoping facts",
-                "Scoping operators",
-                "Scoping merge attempts",
-            ]:
-                print(f"{key:11s}: {info[key]}")
+            sas_task = scope_sas_task(sas_task, scoping_options)
     print("Dumping statistics...")
     dump_statistics(sas_task)
 
