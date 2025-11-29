@@ -3,13 +3,16 @@
 from collections import defaultdict
 from typing import Any
 
-import sas_tasks as fd
 from scoping.actions import VarValAction
-from scoping.backward import coarsen_facts_to_variables
 from scoping.factset import FactSet, VarValPair
 from scoping.merging import merge
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
+
+
+def coarsen_facts_to_variables(facts: FactSet, domains: FactSet) -> None:
+    for var, _ in facts:
+        facts.union(var, domains[var])
 
 
 def prune_facts(fact_list: list[VarValPair], relevant_facts: FactSet):
