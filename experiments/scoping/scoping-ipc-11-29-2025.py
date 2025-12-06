@@ -139,7 +139,7 @@ class OpsFilters:
         if op is None:
             return 0
         assert all_ops
-        if min(all_ops) == max(all_ops):
+        if min(all_ops) == max(all_ops) or len(all_ops) < 2:
             return 0
         return 1
 
@@ -182,7 +182,7 @@ for i, p in enumerate(alg_pairs):
             get_category=domain_as_category,
             format="png",  # Use "tex" for pgfplots output.
         ),
-        name=f"scatterplot-expansions_{i}",
+        name=f"scatterplot-ops_{i}",
     )
 
 exp.run_steps()
