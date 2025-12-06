@@ -8,6 +8,18 @@ from scoping.factset import FactSet, VarValPair
 from scoping.merging import merge
 from scoping.options import ScopingOptions
 from scoping.task import ScopingTask
+import sas_tasks as fd
+from translate import simplify
+
+
+def compute_sas_reachability(scoped_sas: fd.SASTask):
+    try:
+        simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
+    except simplify.Impossible:
+        scoped_sas = ScopingTask.trivial(solvable=False).to_sas()
+    except simplify.TriviallySolvable:
+        scoped_sas = ScopingTask.trivial(solvable=True).to_sas()
+    return scoped_sas
 
 
 def coarsen_facts_to_variables(facts: FactSet, domains: FactSet) -> None:
@@ -181,6 +193,13 @@ def prune_non_reachable(scoping_task: ScopingTask) -> ScopingTask:
     return scoped_task
 
 
+def prune_non_reachable_via_sas(scoping_task: ScopingTask) -> ScopingTask:
+    sas_task = scoping_task.to_sas()
+    scoped_sas = compute_sas_reachability(sas_task)
+    scoped_task = ScopingTask.from_sas(scoped_sas)
+    return scoped_task
+
+
 def reduce_and_get_facts(
     scoping_task: ScopingTask,
     actions: list[VarValAction],
@@ -234,7 +253,7 @@ def scope(scoping_task: ScopingTask, options: ScopingOptions) -> ScopingTask:
         update_stats(stats, scoped_task)
         if not options.enable_forward_pass or scoped_task == scoping_task:
             break
-        scoped_task = prune_non_reachable(scoped_task)
+        scoped_task = prune_non_reachable_via_sas(scoped_task)
         update_stats(stats, scoped_task)
         if (
             not options.enable_loop
