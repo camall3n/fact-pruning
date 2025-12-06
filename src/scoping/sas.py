@@ -8,18 +8,7 @@ from scoping.scoping import scope
 from scoping.options import ScopingOptions
 from scoping.sas_parser import SasParser
 from scoping.task import ScopingTask
-from translate import simplify
 from translate import timers
-
-
-def compute_sas_reachability(scoped_sas: fd.SASTask):
-    try:
-        simplify.filter_unreachable_propositions(scoped_sas, quiet=True)
-    except simplify.Impossible:
-        scoped_sas = ScopingTask.trivial(solvable=False).to_sas()
-    except simplify.TriviallySolvable:
-        scoped_sas = ScopingTask.trivial(solvable=True).to_sas()
-    return scoped_sas
 
 
 def scope_sas_task(sas_task: fd.SASTask, scoping_options: ScopingOptions) -> fd.SASTask:
