@@ -129,40 +129,40 @@ class OpsFilters:
 
     """
 
-    def __init__(self):
-        self.tasks_to_ops = defaultdict(list)
+    def __init__(self, alg1, alg2):
+        self.alg1_ops = defaultdict(int)
+        self.alg2_ops = defaultdict(int)
+        self.alg1 = alg1
+        self.alg2 = alg2
 
     def _get_task(self, run):
         return (run["domain"], run["problem"])
 
-    def _compute_op_diff(self, op, all_ops):
-        if op is None:
+    def _compute_op_diff(self, run):
+        if self.alg1_ops[self._get_task(run)] is None:
             return 0
-        assert all_ops
-        if min(all_ops) == max(all_ops) or len(all_ops) < 2:
+        if self.alg2_ops[self._get_task(run)] is None:
+            return 0
+        if self.alg1_ops[self._get_task(run)] == self.alg2_ops[self._get_task(run)]:
             return 0
         return 1
 
     def store_ops(self, run):
         ops = run.get("translator_operators")
-        if ops is not None:
-            self.tasks_to_ops[self._get_task(run)].append(ops)
+        alg = run.get("algorithm")
+        if alg == self.alg1:
+            self.alg1_ops[self._get_task(run)] = ops
+        if alg == self.alg2:
+            self.alg2_ops[self._get_task(run)] = ops
         return True
 
     def add_op_diff(self, run):
-        run["op_diff"] = self._compute_op_diff(
-            run.get("translator_operators"), self.tasks_to_ops[self._get_task(run)]
-        )
+        run["op_diff"] = self._compute_op_diff(run)
         return run
 
 def domain_as_category(run1, run2):
     # run2['domain'] has the same value, because we always
     # compare two runs of the same problem.
-    # ops1 = run1.get("translator_operators", None)
-    # ops2 = run2.get("translator_operators", None)
-    # if ops1 == ops2:
-    #     return "none"
-
     return run1["domain"]
 
 def all_diff(run):
@@ -172,13 +172,13 @@ def all_diff(run):
 
 alg_pairs = [ ["V", "F"], ["F", "FC"], ["FC", "FCM"], ["FCM", "FCMR"], ["FCMR", "FCMRL"]]
 
-filters = OpsFilters()
 for i, p in enumerate(alg_pairs):
+    filters = OpsFilters(p[0], p[1])
     exp.add_report(
         ScatterPlotReport(
             attributes=["translator_operators"],
-            filter=[rename_algorithms,filters.store_ops, filters.add_op_diff,all_diff],
             filter_algorithm=p,
+            filter=[rename_algorithms,filters.store_ops, filters.add_op_diff,all_diff],
             get_category=domain_as_category,
             format="png",  # Use "tex" for pgfplots output.
         ),
