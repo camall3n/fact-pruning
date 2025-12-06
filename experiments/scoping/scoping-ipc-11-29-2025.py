@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 import itertools
 import os
 
@@ -14,6 +15,7 @@ from common_setup import IssueConfig, IssueExperiment
 
 
 BENCHMARKS_DIR = "/mnt/nfs/home/ademello/research/downward-benchmarks"
+BENCHMARKS_DIR = os.path.expanduser("~") +"/software/downward-benchmarks"
 
 
 REVISIONS = ["scoping-experiments"]
@@ -54,7 +56,7 @@ memory_limit="3584M"
 # SUITE = ["gripper"]
 # time_limit = "1m"
 
-ENVIRONMENT = LocalEnvironment(processes=64)
+ENVIRONMENT = LocalEnvironment(processes=min(64,os.cpu_count()))
 
 PLANNER_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ['PYTHONPATH'] = f"{PLANNER_DIR}/src/"
@@ -114,6 +116,74 @@ def rename_algorithms(run):
 
 algos = ["No scoping", "FD", "V", "F", "FC", "FCM", "FCMR", "FCMRL"]
 exp.add_absolute_report_step(attributes=attributes, filter=rename_algorithms, filter_algorithm=algos)
+
+from downward.reports.scatter import ScatterPlotReport
+
+
+class OpsFilters:
+    """Compute the IPC quality score.
+
+    >>> from downward.reports.absolute import AbsoluteReport
+    >>> filters = OpsFilters()
+    >>> report = AbsoluteReport(filter=[filters.store_ops, filters.add_op_diff])
+
+    """
+
+    def __init__(self):
+        self.tasks_to_ops = defaultdict(list)
+
+    def _get_task(self, run):
+        return (run["domain"], run["problem"])
+
+    def _compute_op_diff(self, op, all_ops):
+        if op is None:
+            return 0
+        assert all_ops
+        if min(all_ops) == max(all_ops):
+            return 0
+        return 1
+
+    def store_ops(self, run):
+        ops = run.get("translator_operators")
+        if ops is not None:
+            self.tasks_to_ops[self._get_task(run)].append(ops)
+        return True
+
+    def add_op_diff(self, run):
+        run["op_diff"] = self._compute_op_diff(
+            run.get("translator_operators"), self.tasks_to_ops[self._get_task(run)]
+        )
+        return run
+
+def domain_as_category(run1, run2):
+    # run2['domain'] has the same value, because we always
+    # compare two runs of the same problem.
+    # ops1 = run1.get("translator_operators", None)
+    # ops2 = run2.get("translator_operators", None)
+    # if ops1 == ops2:
+    #     return "none"
+
+    return run1["domain"]
+
+def all_diff(run):
+    if run["op_diff"] == 1:
+        return run
+    return False
+
+alg_pairs = [ ["V", "F"], ["F", "FC"], ["FC", "FCM"], ["FCM", "FCMR"], ["FCMR", "FCMRL"]]
+
+filters = OpsFilters()
+for i, p in enumerate(alg_pairs):
+    exp.add_report(
+        ScatterPlotReport(
+            attributes=["translator_operators"],
+            filter=[rename_algorithms,filters.store_ops, filters.add_op_diff,all_diff],
+            filter_algorithm=p,
+            get_category=domain_as_category,
+            format="png",  # Use "tex" for pgfplots output.
+        ),
+        name=f"scatterplot-expansions_{i}",
+    )
 
 exp.run_steps()
 
