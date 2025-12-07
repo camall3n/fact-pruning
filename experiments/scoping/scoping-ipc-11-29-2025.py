@@ -234,7 +234,7 @@ for i, p in enumerate(alg_pairs):
     filters = FactsFilters(p[0], p[1])
     exp.add_report(
         ScatterPlotReport(
-            attributes=["translator_operators"],
+            attributes=["translator_facts"],
             filter_algorithm=p,
             filter=[rename_algorithms,filters.store_facts, filters.add_fact_diff, all_fact_diff],
             get_category=domain_as_category,
