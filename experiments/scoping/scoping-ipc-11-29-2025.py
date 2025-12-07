@@ -121,8 +121,7 @@ from downward.reports.scatter import ScatterPlotReport
 
 
 class OpsFilters:
-    """Compute the IPC quality score.
-
+    """
     >>> from downward.reports.absolute import AbsoluteReport
     >>> filters = OpsFilters()
     >>> report = AbsoluteReport(filter=[filters.store_ops, filters.add_op_diff])
@@ -160,13 +159,58 @@ class OpsFilters:
         run["op_diff"] = self._compute_op_diff(run)
         return run
 
+class FactsFilters:
+    """
+    >>> from downward.reports.absolute import AbsoluteReport
+    >>> filters = FactsFilters()
+    >>> report = AbsoluteReport(filter=[filters.store_facts, filters.add_fact_diff])
+
+    """
+
+    def __init__(self, alg1, alg2):
+        self.alg1_facts = defaultdict(int)
+        self.alg2_facts = defaultdict(int)
+        self.alg1 = alg1
+        self.alg2 = alg2
+
+    def _get_task(self, run):
+        return (run["domain"], run["problem"])
+
+    def _compute_fact_diff(self, run):
+        if self.alg1_facts[self._get_task(run)] is None:
+            return 0
+        if self.alg2_facts[self._get_task(run)] is None:
+            return 0
+        if self.alg1_facts[self._get_task(run)] == self.alg2_facts[self._get_task(run)]:
+            return 0
+        return 1
+
+    def store_facts(self, run):
+        f = run.get("translator_facts")
+        alg = run.get("algorithm")
+        if alg == self.alg1:
+            self.alg1_facts[self._get_task(run)] = f
+        if alg == self.alg2:
+            self.alg2_facts[self._get_task(run)] = f
+        return True
+
+    def add_fact_diff(self, run):
+        run["fact_diff"] = self._compute_fact_diff(run)
+        return run
+
+
 def domain_as_category(run1, run2):
     # run2['domain'] has the same value, because we always
     # compare two runs of the same problem.
     return run1["domain"]
 
-def all_diff(run):
+def all_op_diff(run):
     if run["op_diff"] == 1:
+        return run
+    return False
+
+def all_fact_diff(run):
+    if run["fact_diff"] == 1:
         return run
     return False
 
@@ -178,11 +222,25 @@ for i, p in enumerate(alg_pairs):
         ScatterPlotReport(
             attributes=["translator_operators"],
             filter_algorithm=p,
-            filter=[rename_algorithms,filters.store_ops, filters.add_op_diff,all_diff],
+            filter=[rename_algorithms,filters.store_ops, filters.add_op_diff, all_op_diff],
             get_category=domain_as_category,
             format="png",  # Use "tex" for pgfplots output.
         ),
         name=f"scatterplot-ops_{i}",
+    )
+
+
+for i, p in enumerate(alg_pairs):
+    filters = FactsFilters(p[0], p[1])
+    exp.add_report(
+        ScatterPlotReport(
+            attributes=["translator_operators"],
+            filter_algorithm=p,
+            filter=[rename_algorithms,filters.store_facts, filters.add_fact_diff, all_fact_diff],
+            get_category=domain_as_category,
+            format="png",  # Use "tex" for pgfplots output.
+        ),
+        name=f"scatterplot-facts_{i}",
     )
 
 exp.run_steps()
