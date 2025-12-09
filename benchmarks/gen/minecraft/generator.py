@@ -155,8 +155,8 @@ def generate_problem(n_agents, seed, init_cfg, goal_cfg, problem_type):
     return problem
 
 def main():
-    agent_counts_hunger = range(1, 51)  # 1 to 30 agents
-    agent_counts_crafting = range(1, 51)  # 1 to 30 agents
+    agent_counts_hunger = [1, 2, 5, 10, 15, 20, 30, 40, 50]
+    agent_counts_crafting = [1, 2, 5, 10, 15, 20, 30, 40, 50]
 
     init_cfg = {
         "hungry_prob": 0.7,  # 70% chance each agent starts hungry
@@ -181,7 +181,7 @@ def main():
     shutil.copy("domain.pddl", "problems/hunger")
 
     for n_agents in agent_counts_hunger:
-        for i in range(5):
+        for i in range(1):
             seed = n_agents * 1000 + i  # Unique seed for each problem
             problem = generate_problem(n_agents, seed, init_cfg, hunger_goal_cfg, "hunger")
             writer = FstripsWriter(problem)
@@ -193,7 +193,7 @@ def main():
     
 
     for n_agents in agent_counts_crafting:
-        for i in range(5):
+        for i in range(1):
             seed = n_agents * 1000 + i + 100000  # Offset to avoid collision with hunger seeds
             problem = generate_problem(n_agents, seed, init_cfg, crafting_goal_cfg, "crafting")
             writer = FstripsWriter(problem)
