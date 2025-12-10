@@ -33,7 +33,7 @@ CONFIG_NICKS = []
 # CONFIG_NICKS.append(('basic', ["--translate-options", '--keep-unimportant-variables', "--search-options", "--search", "astar(lmcut())"]))
 CONFIG_NICKS.append(("fd", ["--search", "astar(lmcut())"]))
 # CONFIG_NICKS.append(('basic', ["--translate-options", '--keep-unimportant-variables', "--search-options", "--search", "astar(lmcut())"]))
-for x in ["FC", "FCM", "FCMR"]:
+for x in ["FCM"]:
     CONFIG_NICKS.append(
         (
             x,
@@ -130,7 +130,7 @@ def rename_algorithms(run):
     return run
 
 
-algos = ["FD", "FC", "FCM", "FCMR"]
+algos = ["FD", "FCM"]
 exp.add_absolute_report_step(
     attributes=attributes, filter=rename_algorithms, filter_algorithm=algos
 )
@@ -191,7 +191,7 @@ def all_diff(run):
     return False
 
 
-alg_pairs = [["FD", "FC"], ["FC", "FCM"], ["FCM", "FCMR"]]
+alg_pairs = [["FD", "FCM"]]
 
 for i, p in enumerate(alg_pairs):
     filters = OpsFilters(p[0], p[1])
