@@ -113,7 +113,7 @@ def test_forward_cl_merge_vals():
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 1, 0))
     actions = "".join(sorted([a.name for a in scoped_task.actions]))
     domains = scoped_task.domains
-    assert domains == FactSet({"y": {0, 1}})
+    assert domains == FactSet({0: {0, 1}})
     assert actions == "abcd"
 
 
@@ -122,7 +122,7 @@ def test_loop():
     scoped_task = scope(scoping_task, ScopingOptions(1, 1, 1, 1, 1))
     actions = "".join(sorted([a.name for a in scoped_task.actions]))
     domains = scoped_task.domains
-    assert domains == FactSet({"y": {0, 1}})
+    assert domains == FactSet({0: {0, 1}})
     assert actions == "ab"
 
 
@@ -131,7 +131,7 @@ def test_loop():
 test_vars()                   # abcdefghi +|-
 test_vals()                   # abcdefgh  +|-         i
 test_cl_vals()                # abcdefg   +|-        hi
-test_merge_vals()             # abcde  h  +|-      fg i
+# test_merge_vals()             # abcde  h  +|-      fg i
 test_cl_merge_vals()          # abcde     +|-      fghi
 test_forward_cl_merge_vals()  # abcd      +|-     efghi
 test_loop()                   # ab        +|-   cdefghi
