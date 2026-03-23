@@ -129,9 +129,8 @@ def test_loop():
 # %%
 # fmt: off
 test_vars()                   # abcdefghi +|-
-test_vals()                   # abcdefgh  +|-         i
+test_vals()                   # abcdefg   +|-        hi
 test_cl_vals()                # abcdefg   +|-        hi
-# test_merge_vals()             # abcde  h  +|-      fg i
 test_cl_merge_vals()          # abcde     +|-      fghi
 test_forward_cl_merge_vals()  # abcd      +|-     efghi
 test_loop()                   # ab        +|-   cdefghi
