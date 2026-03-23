@@ -33,6 +33,11 @@ The usage is:
 ```
 Where `MODE` is one of {`V`, `F`, `FC`, `FCM`, `FCMR`, `FCMRL`}. You can run the `FD` baseline as normal.
 
+The Minecraft domain and problem files from the paper are included in:
+```
+benchmarks/gen/minecraft/problems/hunger/
+```
+
 ---
 
 <img src="misc/images/fast-downward.svg" width="800" alt="Fast Downward">
