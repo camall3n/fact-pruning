@@ -1,3 +1,29 @@
+# Fact Pruning
+
+Code for the paper *Simplifying Planning Tasks with Fact-Level Relevance Analysis*.
+
+This code is a fork of Fast Downward (v23.06). The original documentation is included below.
+
+---
+
+Note that we previously called everything "scoping" instead of "pruning", so the code still uses that name internally. If you change the code in `src/scoping`, you'll likely need to run `./build.py`.
+
+This is taken care of automatically if you run `run-scoping.sh`:
+```bash
+DOMAIN=$1
+PROBLEM=$2
+shift 2
+./build.py && PYTHONPATH=./builds/release/bin/ ./fast-downward.py --keep-sas-file $DOMAIN $PROBLEM --search "astar(lmcut())"  --translate-options --keep-unimportant-variables $@
+```
+
+The usage is:
+```bash
+./run-scoping.sh DOMAIN PROBLEM --scoping MODE
+```
+Where `MODE` is one of {`V`, `F`, `FC`, `FCM`, `FCMR`, `FCMRL`}. You can run the `FD` baseline as normal.
+
+---
+
 <img src="misc/images/fast-downward.svg" width="800" alt="Fast Downward">
 
 Fast Downward is a domain-independent classical planning system.
