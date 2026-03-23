@@ -4,6 +4,17 @@ Code for the paper *Simplifying Planning Tasks with Fact-Level Relevance Analysi
 
 This code is a fork of Fast Downward (v23.06). The original documentation is included below.
 
+To cite this work, please use:
+```
+@article{allen2026fact_pruning,
+  title        = {Simplifying Planning Tasks with Fact-Level Relevance Analysis},
+  journal      = {Proceedings of the International Conference on Automated Planning and Scheduling},
+  author       = {Allen, Cameron and de Mello Koch, Anita and Kokel, Harsha and Konidaris, George and Katz, Michael},
+  year         = {2026},
+  month        = {Jun.}
+}
+```
+
 ---
 
 Note that we previously called everything "scoping" instead of "pruning", so the code still uses that name internally. If you change the code in `src/scoping`, you'll likely need to run `./build.py`.
